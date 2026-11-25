@@ -35,6 +35,7 @@ OPAMP_EXPERIMENTS = [
     ("pages/13_Narrow_Band_Pass_Filter.py", "13. First Order Narrow Band-Pass Butterworth Filter", "📶"),
     ("pages/14_Current_to_Voltage_Converter.py", "14. Current-to-Voltage Converter (µA741)", "🔌"),
     ("pages/15_Voltage_to_Current_Converter.py", "15. Voltage-to-Current Converter (µA741)", "🔋"),
+    ("pages/18_Differential_Amplifier_CMRR.py", "18. Differential Amplifier & CMRR Measurement (µA741)", "⚖️"),
 ]
 
 TIMER_555_EXPERIMENTS = [
