@@ -1,10 +1,12 @@
 import streamlit as st
+from utils import render_sidebar_header
 
 st.set_page_config(
     page_title="Linear Integrated Circuits Virtual Lab",
     page_icon="⚡",
     layout="wide"
 )
+render_sidebar_header()
 
 st.title("Linear Integrated Circuits Virtual Laboratory")
 st.markdown(
