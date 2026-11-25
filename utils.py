@@ -3,7 +3,7 @@ import numpy as np
 
 
 def render_sidebar_header():
-    import os
+import os
 import streamlit as st
 
 def render_sidebar_header():
