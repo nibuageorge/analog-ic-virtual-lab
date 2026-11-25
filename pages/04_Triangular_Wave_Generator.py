@@ -10,8 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 4: Triangular Wave Generator using Op-Amp ($\mu$A741)")
 st.markdown(
-    "Design and construct a two-stage triangular wave generator using **$\mu$A741** comparator ($A_1$) and "
-    "integrator ($A_2$), study the square wave ($v_{o1}$) and triangular wave ($v_o$) outputs "
+    "Design and construct a two-stage triangular wave generator using **$\mu$A741** comparator and "
+    "integrator, study the square wave ($v_{o1}$) and triangular wave ($v_o$) outputs "
     " (Ref. Gayakwad)."
 )
 
