@@ -20,73 +20,82 @@ st.markdown(
 # -------------------------------------------------------------------------
 def draw_sawtooth_gen_schematic(r1_kohm, r4_kohm, rp_kohm, wiper_pct, c1_uf, r2_kohm, r3_kohm, rom_kohm, vcc):
     with schemdraw.Drawing(show=False) as d:
-        d.config(unit=2.45, fontsize=8.5)
+        d.config(unit=2.4, fontsize=8.4)
 
-        # --- Stage 1: Non-Inverting Comparator (A1) ---
-        a1 = d.add(elm.Opamp(leads=True).label('$A_1$\n($\mu$A741)', loc='center', fontsize=8))
-        d.add(elm.Line().up().at(a1.vd).length(0.4).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
-        d.add(elm.Line().down().at(a1.vs).length(0.4).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
+        # --- Stage 1: Non-Inverting Comparator (A1) at x = 0 ---
+        a1 = d.add(elm.Opamp(leads=True).at((0, 0)).label('$A_1$\n($\mu$A741)', loc='center', fontsize=8))
+        d.add(elm.Line().up().at(a1.vd).length(0.35).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
+        d.add(elm.Line().down().at(a1.vs).length(0.35).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
 
-        # Ground Pin 2 (-) of A1
-        d.add(elm.Line().left().at(a1.in1).length(0.45))
+        # Pin 2 (-) of A1 grounded cleanly to the left
+        d.add(elm.Line().left().at(a1.in1).length(0.5))
         d.add(elm.Ground())
 
         # Junction P at Pin 3 (+) of A1
-        d.add(elm.Line().left().at(a1.in2).length(0.75))
+        d.add(elm.Line().left().at(a1.in2).length(0.9))
         node_p = d.add(elm.Dot().label('P', loc='top', fontsize=8.5))
+        px, py = node_p.center
 
         # Output of A1 (v_o1)
-        d.add(elm.Line().right().at(a1.out).length(0.65))
-        vo1_node = d.add(elm.Dot().label('$v_{o1}$', loc='top', fontsize=9))
+        d.add(elm.Line().right().at(a1.out).length(0.6))
+        vo1_node = d.add(elm.Dot().label('$v_{o1}$', loc='top', fontsize=8.8))
+        vo1_x, vo1_y = vo1_node.center
 
-        # Resistor R3 from node P down and over to vo1_node (below -VCC)
-        d.add(elm.Line().down().at(node_p.center).length(1.65))
-        d.add(elm.Resistor().right().tox(vo1_node.center).label(f'$R_3$\n{r3_kohm:.1f} kΩ', loc='bottom'))
-        d.add(elm.Line().up().toy(vo1_node.center))
+        # Resistor R3 routed cleanly below A1's -VCC label from P to vo1
+        r3_y = py - 1.55
+        d.add(elm.Line().down().at((px, py)).toy(r3_y))
+        d.add(elm.Resistor().right().tox(vo1_x).label(f'$R_3$\n{r3_kohm:.1f} kΩ', loc='bottom'))
+        d.add(elm.Line().up().toy(vo1_y))
 
-        # --- Integrator Input Summing Network: R1 from vo1 + Potentiometer (Rp, R4) ---
-        d.add(elm.Resistor().right().at(vo1_node.center).length(2.4).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='bottom'))
+        # --- Integrator Input Summing Node (sum_x, vo1_y) ---
+        sum_x = vo1_x + 2.8
+        d.add(elm.Resistor().right().at((vo1_x, vo1_y)).tox(sum_x).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='bottom'))
         sum_node2 = d.add(elm.Dot())
 
-        # Potentiometer Rp connected between +VCC and -VCC feeding R4 into sum_node2
-        pot_x = sum_node2.center[0] - 1.15
-        pot_y = sum_node2.center[1] + 1.55
-        d.add(elm.Potentiometer().up().at((pot_x, pot_y - 0.7)).length(1.4).label(f'$R_p$\n{rp_kohm:.0f} kΩ', loc='left', fontsize=8))
-        d.add(elm.Line().up().length(0.3).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
-        d.add(elm.Line().down().at((pot_x, pot_y - 0.7)).length(0.3).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
+        # --- DC Offset Branch (Potentiometer Rp + R4) placed high and clear above R1 ---
+        pot_x = vo1_x + 1.0
+        pot_bot_y = vo1_y + 1.65
+        pot_top_y = pot_bot_y + 1.3
+        pot_mid_y = (pot_bot_y + pot_top_y) / 2.0
 
-        # Wiper connection through R4 down to Integrator Summing Node
-        d.add(elm.Line().right().at((pot_x + 0.35, pot_y)).length(0.8))
-        d.add(elm.Resistor().down().toy(sum_node2.center).label(f'$R_4$\n{r4_kohm:.1f} kΩ', loc='right', fontsize=8))
+        d.add(elm.Potentiometer().up().at((pot_x, pot_bot_y)).to((pot_x, pot_top_y)).label(f'$R_p$\n{rp_kohm:.0f} kΩ', loc='left', fontsize=8))
+        d.add(elm.Line().up().at((pot_x, pot_top_y)).length(0.3).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
+        d.add(elm.Line().down().at((pot_x, pot_bot_y)).length(0.3).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
 
-        # --- Stage 2: Inverting Integrator (A2) ---
-        a2 = d.add(elm.Opamp(leads=True).anchor('in1').at(sum_node2.center).label('$A_2$\n($\mu$A741)', loc='center', fontsize=8))
-        d.add(elm.Line().up().at(a2.vd).length(0.4).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
-        d.add(elm.Line().down().at(a2.vs).length(0.4).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
+        # Wiper tap -> horizontal R4 -> drop straight into Integrator Summing Node
+        wiper_x = pot_x + 0.35
+        d.add(elm.Resistor().right().at((wiper_x, pot_mid_y)).tox(sum_x).label(f'$R_4$\n{r4_kohm:.1f} kΩ', loc='top', fontsize=8))
+        d.add(elm.Line().down().toy(vo1_y))
+
+        # --- Stage 2: Inverting Integrator (A2) anchored at sum_node2 ---
+        a2 = d.add(elm.Opamp(leads=True).anchor('in1').at((sum_x, vo1_y)).label('$A_2$\n($\mu$A741)', loc='center', fontsize=8))
+        d.add(elm.Line().up().at(a2.vd).length(0.35).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
+        d.add(elm.Line().down().at(a2.vs).length(0.35).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
 
         # Offset Minimizing Resistor R_OM on Pin 3 (+) of A2
         d.add(elm.Line().left().at(a2.in2).length(0.45))
-        d.add(elm.Resistor().down().length(1.1).label(f'$R_{{OM}}$\n{rom_kohm:.2f} kΩ', loc='bottom'))
+        d.add(elm.Resistor().down().length(1.0).label(f'$R_{{OM}}$\n{rom_kohm:.2f} kΩ', loc='bottom'))
         d.add(elm.Ground())
 
-        # Feedback Capacitor C1 across A2
-        d.add(elm.Line().up().at(sum_node2.center).length(1.15))
-        d.add(elm.Capacitor().right().tox(a2.out).label(f'$C_1$\n{c1_uf:.3f} µF', loc='top'))
-        d.add(elm.Line().down().toy(a2.out))
+        # Feedback Capacitor C1 across A2 (above A2, completely clear of Rp and R4)
+        cap_y = vo1_y + 1.15
+        d.add(elm.Line().up().at((sum_x, vo1_y)).toy(cap_y))
+        d.add(elm.Capacitor().right().tox(a2.out[0]).label(f'$C_1$\n{c1_uf:.3f} µF', loc='top'))
+        d.add(elm.Line().down().toy(a2.out[1]))
         vo_node = d.add(elm.Dot())
+        vo_x, vo_y = vo_node.center
 
         # Final Sawtooth Output v_o
-        d.add(elm.Line().right().at(vo_node.center).length(0.85).label('$v_o$ (Sawtooth)', loc='right'))
+        d.add(elm.Line().right().at((vo_x, vo_y)).length(0.8).label('$v_o$ (Sawtooth)', loc='right'))
 
-        # Closed-loop feedback path via R2 from v_o back to Junction P
-        d.add(elm.Line().down().at(node_p.center).length(2.55))
-        d.add(elm.Resistor().right().length(3.2).label(f'$R_2$\n{r2_kohm:.1f} kΩ', loc='bottom'))
-        d.add(elm.Line().right().tox(vo_node.center))
-        d.add(elm.Line().up().toy(vo_node.center))
+        # Closed-loop feedback path via R2 along bottom rail (y = r3_y - 0.95)
+        fb_y = r3_y - 0.95
+        d.add(elm.Line().down().at((px, r3_y)).toy(fb_y))
+        d.add(elm.Resistor().right().tox(vo_x).label(f'$R_2$\n{r2_kohm:.1f} kΩ', loc='bottom'))
+        d.add(elm.Line().up().toy(vo_y))
 
         fig = d.draw(show=False).fig
         return fig
-
 # -------------------------------------------------------------------------
 # Helper: Generate Exact Analytical Waveforms for Gayakwad Fig. 7-17
 # -------------------------------------------------------------------------
