@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 17: Astable Multivibrator using IC 555 Timer")
 st.markdown(
-    "Design and construct an **Astable Multivibrator** using **IC 555 Timer** for a given free-running frequency ($f_o$), "
-    "study the **positive pulse width ($t_c$)**, **negative pulse width ($t_d$)**, and **capacitor voltage waveform ($v_C$)**, "
-    "and repeat the experiment for **one more frequency** (*Gayakwad, Section 9-4-3(a), Figure 9-21, Eqs. 9-8 to 9-11*)."
+    "Design and construct an **Astable Multivibrator** using **IC 555 Timer** "
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -211,7 +210,7 @@ with disp_col:
     schem_col, cro_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 9-21a*)**")
+        st.markdown("**Circuit Diagram (Gayakwad)**")
         fig_sch = draw_555_astable_schematic(ra_kohm, rb_kohm, c_uf, c1_uf, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -221,7 +220,7 @@ with disp_col:
         )
 
     with cro_col:
-        st.markdown("**Output & Capacitor Waveforms (*Gayakwad Fig. 9-21b*)**")
+        st.markdown("**Output & Capacitor Waveforms (Gayakwad)**")
         t_arr = np.linspace(0.0, 3.0 * period, 2500)
         vo_arr, vc_arr = generate_555_waveforms(t_arr, tc, td, vcc)
         t_ms = t_arr * 1000.0
@@ -262,7 +261,7 @@ with disp_col:
     # ---------------------------------------------------------------------
     tab_repeat, tab_theory = st.tabs([
         "Repeat Experiment for One More Frequency",
-        "Theory & Design Equations (Gayakwad Sec. 9-4-3a)"
+        "Theory & Design Equations (Gayakwad)"
     ])
 
     with tab_repeat:
@@ -353,7 +352,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Equations (*R. A. Gayakwad, Section 9-4-3(a), Figure 9-21*)
+            ### Theory & Design Equations (R. A. Gayakwad)
 
             1. **Circuit Operation:**
                * Initially, when the output (Pin 3) is HIGH ($\\cong V_{{CC}}$), external capacitor $C$ charges toward $+V_{{CC}}$ through **$R_A + R_B$**[cite: 7, 8].
