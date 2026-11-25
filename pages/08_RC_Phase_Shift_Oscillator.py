@@ -22,17 +22,17 @@ def draw_rc_phase_shift_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, rom_kohm, use_
     rf_label = f"{rf_kohm/1000:.2f} MΩ" if rf_kohm >= 1000 else f"{rf_kohm:.0f} kΩ"
 
     with schemdraw.Drawing(show=False) as d:
-        d.config(unit=2.45, fontsize=8.4)
+        d.config(unit=2.5, fontsize=8.4)
 
         # --- Op-Amp (741/351): Inverting (-) at top, Non-Inverting (+) at bottom ---
         op = d.add(elm.Opamp(leads=True).at((0, 0)).label('741/351', loc='center', fontsize=8.5))
         d.add(elm.Line().up().at(op.vd).length(0.35).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
         d.add(elm.Line().down().at(op.vs).length(0.35).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
 
-        # Offset Minimizing Resistor R_OM on Non-Inverting (+) Pin
+        # Offset Minimizing Resistor R_OM on Non-Inverting (+) Pin (kept compact above RC ladder)
         noninv_x, noninv_y = op.in2
-        d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.55))
-        d.add(elm.Resistor().down().length(1.05).label(f'$R_{{OM}}$\n{rom_kohm:.1f} kΩ', loc='left', fontsize=8))
+        d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.45))
+        d.add(elm.Resistor().down().length(0.95).label(f'$R_{{OM}}$\n{rom_kohm:.1f} kΩ', loc='bottom', fontsize=8))
         d.add(elm.Ground())
 
         # --- Output Node & Back-to-Back Zener Clamp D1, D2 ---
@@ -40,19 +40,19 @@ def draw_rc_phase_shift_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, rom_kohm, use_
         fb_tap = d.add(elm.Dot())
         fb_x, fb_y = fb_tap.center
 
-        d.add(elm.Line().right().at((fb_x, fb_y)).length(0.75))
+        d.add(elm.Line().right().at((fb_x, fb_y)).length(0.85))
         z_tap = d.add(elm.Dot())
         zx, zy = z_tap.center
 
-        d.add(elm.Line().right().at((zx, zy)).length(0.65).label('$v_o$', loc='right', fontsize=9.5))
+        d.add(elm.Line().right().at((zx, zy)).length(0.75).label('$v_o$', loc='right', fontsize=9.5))
 
-        # Back-to-Back Zeners D1 & D2 to Ground
+        # Back-to-Back Zeners D1 & D2 to Ground (labels cleanly on right side)
         d.add(elm.Line().down().at((zx, zy)).length(0.25))
         if use_zener:
-            d.add(elm.Zener().down().length(0.85).label('$D_1$', loc='left', fontsize=8))
-            d.add(elm.Zener().down().reverse().length(0.85).label('$D_2$', loc='left', fontsize=8))
+            d.add(elm.Zener().down().length(0.95).label('$D_1$', loc='bottom', fontsize=8.5))
+            d.add(elm.Zener().down().reverse().length(0.95).label('$D_2$', loc='bottom', fontsize=8.5))
         else:
-            d.add(elm.Line().down().length(1.7).linestyle('--'))
+            d.add(elm.Line().down().length(1.9).linestyle('--'))
         d.add(elm.Ground())
 
         # --- Upper Inverting Amplifier Network (R1 & Potentiometer RF) ---
@@ -68,35 +68,35 @@ def draw_rc_phase_shift_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, rom_kohm, use_
         d.add(elm.Line().down().at((fb_x, sy)).toy(fb_y))
 
         # Input Resistor R1 going left from sum_node
-        d.add(elm.Resistor().left().at((sx, sy)).length(1.9).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='top', fontsize=8.5))
+        d.add(elm.Resistor().left().at((sx, sy)).length(2.15).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='top', fontsize=8.5))
         left_bus_x = d.here[0]
 
-        # --- Lower 3-Stage RC Phase-Shift Ladder Network ---
-        ladder_y = noninv_y - 2.05
+        # --- Lower 3-Stage RC Phase-Shift Ladder Network (dropped well below R_OM) ---
+        ladder_y = noninv_y - 2.45
         d.add(elm.Line().down().at((left_bus_x, sy)).toy(ladder_y))
         n1 = d.add(elm.Dot())
         n1_x, n1_y = n1.center
 
-        # Shunt Resistor R #1 to Ground
-        d.add(elm.Resistor().down().at((n1_x, n1_y)).length(1.25).label(f'$R$\n{r_kohm:.1f} kΩ', loc='right', fontsize=8))
+        # Shunt Resistor R #1 to Ground (loc='bottom' puts label cleanly beside vertical resistor)
+        d.add(elm.Resistor().down().at((n1_x, n1_y)).length(1.3).label(f'$R$\n{r_kohm:.1f} kΩ', loc='bottom', fontsize=8))
         d.add(elm.Ground())
 
         # Series Capacitor C #1
-        d.add(elm.Capacitor().right().at((n1_x, n1_y)).length(1.55).label(f'$C$\n{c_uf:.2f} µF', loc='top', fontsize=8))
+        d.add(elm.Capacitor().right().at((n1_x, n1_y)).length(1.75).label(f'$C$\n{c_uf:.2f} µF', loc='top', fontsize=8))
         n2 = d.add(elm.Dot())
         n2_x, n2_y = n2.center
 
         # Shunt Resistor R #2 to Ground
-        d.add(elm.Resistor().down().at((n2_x, n2_y)).length(1.25).label(f'$R$\n{r_kohm:.1f} kΩ', loc='right', fontsize=8))
+        d.add(elm.Resistor().down().at((n2_x, n2_y)).length(1.3).label(f'$R$\n{r_kohm:.1f} kΩ', loc='bottom', fontsize=8))
         d.add(elm.Ground())
 
         # Series Capacitor C #2
-        d.add(elm.Capacitor().right().at((n2_x, n2_y)).length(1.55).label(f'$C$\n{c_uf:.2f} µF', loc='top', fontsize=8))
+        d.add(elm.Capacitor().right().at((n2_x, n2_y)).length(1.75).label(f'$C$\n{c_uf:.2f} µF', loc='top', fontsize=8))
         n3 = d.add(elm.Dot())
         n3_x, n3_y = n3.center
 
         # Shunt Resistor R #3 to Ground
-        d.add(elm.Resistor().down().at((n3_x, n3_y)).length(1.25).label(f'$R$\n{r_kohm:.1f} kΩ', loc='right', fontsize=8))
+        d.add(elm.Resistor().down().at((n3_x, n3_y)).length(1.3).label(f'$R$\n{r_kohm:.1f} kΩ', loc='bottom', fontsize=8))
         d.add(elm.Ground())
 
         # Series Capacitor C #3 back to Output fb_tap
