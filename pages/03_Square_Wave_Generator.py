@@ -35,7 +35,6 @@ def draw_square_gen_schematic(r_kohm, c_uf, r1_kohm, r2_kohm, vcc):
         d.add(elm.Line().right().length(0.9).label('$v_o$ (6)', loc='right'))
 
         # --- Lower Feedback Loop (Positive voltage divider R1, R2 to Pin 3) ---
-        # Kept closer to the op-amp (0.8 units left)
         d.add(elm.Line().left().at(op.in2).length(0.8))
         d.add(elm.Line().down().length(1.65))
         div_node = d.add(elm.Dot())
@@ -49,7 +48,6 @@ def draw_square_gen_schematic(r_kohm, c_uf, r1_kohm, r2_kohm, vcc):
         d.add(elm.Line().up().toy(out_node.center))
 
         # --- Upper Feedback Loop (Negative RC timing branch to Pin 2) ---
-        # Extended further left (2.2 units) so Capacitor C drops completely clear of Pin 3's wire
         d.add(elm.Line().left().at(op.in1).length(2.2))
         inv_node = d.add(elm.Dot())
 
@@ -125,17 +123,26 @@ with ctrl_col:
     )
 
     st.subheader("2. Positive Feedback Divider ($R_1, R_2$)")
-    preset_beta = st.checkbox(
-        "Use Gayakwad Simplification ($R_2 = 1.16 R_1 \\Rightarrow f_o = 1/2RC$)",
-        value=True,
-        help="When R2 = 1.16·R1, ln((2R1 + R2)/R2) = 1.00, simplifying fo to 1/(2RC)."
+    r1_kohm = st.slider(
+        "Feedback Resistor $R_1$ (kΩ)",
+        min_value=1.0,
+        max_value=50.0,
+        value=10.0,
+        step=0.2,
+        help="Sets feedback fraction β = R1 / (R1 + R2) and threshold voltages ±V_UT."
     )
-    r1_kohm = st.slider("Feedback Resistor $R_1$ (kΩ)", min_value=1.0, max_value=50.0, value=10.0, step=0.5)
-    if preset_beta:
-        r2_kohm = round(1.16 * r1_kohm, 2)
-        st.caption(f"Matched Resistor: **$R_2 = 1.16 R_1 = {r2_kohm:.2f}\\text{{ k}}\\Omega$**")
-    else:
-        r2_kohm = st.slider("Feedback Resistor $R_2$ (kΩ)", min_value=1.0, max_value=50.0, value=11.6, step=0.5)
+    r2_kohm = st.slider(
+        "Feedback Resistor $R_2$ (kΩ)",
+        min_value=1.0,
+        max_value=50.0,
+        value=11.6,
+        step=0.2,
+        help="When R2 = 1.16·R1, ln((2R1 + R2)/R2) = 1.00 and fo simplifies to 1 / (2RC)."
+    )
+    st.caption(
+        f"Feedback Fraction: **$\\beta = \\frac{{R_1}}{{R_1+R_2}} = {r1_kohm/(r1_kohm+r2_kohm):.3f}$** | "
+        f"$\\ln\\left(\\frac{{2R_1+R_2}}{{R_2}}\\right) = {np.log((2*r1_kohm+r2_kohm)/r2_kohm):.3f}$"
+    )
 
     st.subheader("3. Supply & Display Settings")
     vcc = st.slider("Supply Voltage $\pm V_{CC}$ (V)", min_value=5.0, max_value=18.0, value=15.0, step=1.0)
@@ -235,7 +242,7 @@ with disp_col:
     with tab_multi:
         st.markdown(
             "Select three timing resistor values ($R_a, R_b, R_c$) with fixed $C = "
-            f"{c_uf:.3f}\\text{{ µF}}$, $R_1 = {r1_kohm:.1f}\\text{{ k}}\\Omega$, and $R_2 = {r2_kohm:.2f}\\text{{ k}}\\Omega$ "
+            f"{c_uf:.3f}\\text{{ µF}}$, $R_1 = {r1_kohm:.1f}\\text{{ k}}\\Omega$, and $R_2 = {r2_kohm:.1f}\\text{{ k}}\\Omega$ "
             "to compare the square-wave outputs across **three different frequencies** simultaneously:"
         )
 
