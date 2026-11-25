@@ -10,7 +10,7 @@ render_sidebar_header()
 
 st.title("Experiment 5: Sawtooth Wave Generator using Op-Amp ($\mu$A741)")
 st.markdown(
-    "Design and construct a sawtooth wave generator using **$\mu$A741** comparator ($A_1$), integrator ($A_2$)"
+    "Design and construct a sawtooth wave generator using **$\mu$A741** comparator and integrator"
     " (Ref. Gayakwad)."
 )
 
