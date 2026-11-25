@@ -4,11 +4,6 @@ import numpy as np
 
 
 def render_sidebar_header():
-    for candidate in ["assets/logo.png", "logo.png", "assets/logo.jpg", "logo.jpg", "assets/Logo.png", "Logo.png"]:
-        if os.path.exists(candidate):
-            st.sidebar.image(candidate, use_container_width=True)
-            break
-
     st.markdown(
         """
         <style>
@@ -49,12 +44,31 @@ def render_sidebar_header():
             font-size: 0.78rem !important;
             line-height: 1.2 !important;
         }
+
+        /* Move user sidebar content (logo + developer card) ABOVE the Home/pages navigation */
+        [data-testid="stSidebarContent"] {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        [data-testid="stSidebarUserContent"] {
+            order: 1 !important;
+            padding-top: 0.25rem !important;
+            padding-bottom: 0.5rem !important;
+        }
+        [data-testid="stSidebarNav"] {
+            order: 2 !important;
+            padding-top: 0.25rem !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    st.sidebar.markdown("---")
+    for candidate in ["assets/logo.png", "logo.png", "assets/logo.jpg", "logo.jpg", "assets/Logo.png", "Logo.png"]:
+        if os.path.exists(candidate):
+            st.sidebar.image(candidate, use_container_width=True)
+            break
+
     st.sidebar.markdown(
         """
         <div style="
@@ -65,7 +79,8 @@ def render_sidebar_header():
             border-left: 4px solid #1f77b4;
             font-size: 0.85rem;
             line-height: 1.45;
-            margin-top: 8px;
+            margin-top: 6px;
+            margin-bottom: 6px;
         ">
             This Virtual Lab is developed by<br>
             <strong>Dr. Nibu A George</strong>,<br>
@@ -73,6 +88,7 @@ def render_sidebar_header():
             Baselius College (Autonomous),<br>
             Kottayam
         </div>
+        <hr style="margin: 10px 0 4px 0; border: none; border-top: 1px solid #cbd5e1;">
         """,
         unsafe_allow_html=True,
     )
