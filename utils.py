@@ -4,9 +4,10 @@ import numpy as np
 
 
 def render_sidebar_header():
-    logo_path = "assets/logo.png" if os.path.exists("assets/logo.png") else "logo.png"
-    if os.path.exists(logo_path):
-        st.logo(logo_path, size="large")
+    for candidate in ["assets/logo.png", "logo.png", "assets/logo.jpg", "logo.jpg", "assets/Logo.png", "Logo.png"]:
+        if os.path.exists(candidate):
+            st.sidebar.image(candidate, use_container_width=True)
+            break
 
     st.markdown(
         """
