@@ -386,23 +386,23 @@ with disp_col:
             st.markdown("**Observation Table (Three Frequencies)**")
             st.table(table_rows)
 
-        with tab_theory:
+with tab_theory:
             st.markdown(
                 f"""
-                ### Theory & Design Equations (*R. A. Gayakwad, Section 7.8*)
+                ### Theory & Design Procedure (*R. A. Gayakwad, Section 7.8*)
 
-                1. **Circuit Operation:**
-                   * **$A_1$** operates as a non-inverting comparator whose output $v'_o$ is clamped at $\\pm V_{{clamp}} = \\pm {v_clamp:.2f}\\text{{ V}}$ by back-to-back Zener diodes $D_1, D_2$ (or $\\pm V_{{sat}}$ without Zeners).
-                   * Potentiometer **$R_4$** ($20\\text{{ k}}\\Omega$ *Duty cycle adjust*) applies a variable DC reference voltage **$V_{{ref}} = {V_ref:+.2f}\\text{{ V}}$** directly to the non-inverting input (`+`) of integrator **$A_2$**.
-                   * Because the inverting input (`-`) of $A_2$ is held at virtual voltage $V_{{ref}}$, the charging and discharging currents through $R_1$ become unequal whenever $V_{{ref}} \\ne 0$:
-                     $$I_{{\\text{{up}}}} = \\frac{{V_{{clamp}} + V_{{ref}}}}{{R_1}}, \\qquad I_{{\\text{{down}}}} = \\frac{{V_{{clamp}} - V_{{ref}}}}{{R_1}}$$
+                1. **Principle of Operation:**
+                   * The sawtooth-wave generator is obtained from the triangular-wave generator by connecting a **$20\\text{{ k}}\\Omega$ potentiometer ($R_4$, *Duty cycle adjust*)** between $+V_{{CC}}$ and $-V_{{EE}}$, with its wiper connected to the non-inverting input (`+`) of integrator **$A_2$**.
+                   * Back-to-back Zener diodes **$D_1$ and $D_2$** clamp the comparator ($A_1$) square-wave output $v'_o$ at $\\pm V_Z$ (where $V_Z = V_{{Z1}} + 0.7\\text{{ V}}$), ensuring a well-defined, constant peak-to-peak output amplitude.
+                   * When the wiper of $R_4$ is at the center ($0\\text{{ V}}$), the rise and fall times are equal ($T_1 = T_2$), yielding a symmetric **triangular wave**. Moving the wiper toward $+V_{{CC}}$ or $-V_{{EE}}$ applies a DC offset voltage to $A_2$'s `+` input, making the charge and discharge rates unequal ($T_1 \\ne T_2$) and converting the output into a **sawtooth waveform**.
 
-                2. **Peak-to-Peak Amplitude & Timing Equations:**
-                   * **Peak-to-Peak Sawtooth Output:**
-                     $$V_{{o(pp)}} = 2 V_p = 2 \\left(\\frac{{R_2}}{{R_3}}\\right) V_{{clamp}} = {vo_pp_ideal:.2f}\\text{{ V}} \\quad (R_3 > R_2)$$
-                   * **Rise Time ($T_1$) and Fall Time ($T_2$):**
-                     $$T_1 = \\frac{{V_{{o(pp)}} R_1 C_1}}{{V_{{clamp}} + V_{{ref}}}} = {T_rise*1000:.3f}\\text{{ ms}}, \\qquad T_2 = \\frac{{V_{{o(pp)}} R_1 C_1}}{{V_{{clamp}} - V_{{ref}}}} = {T_fall*1000:.3f}\\text{{ ms}}$$
-                   * **Total Period & Oscillation Frequency:**
-                     $$T = T_1 + T_2 = \\frac{{2 V_{{o(pp)}} R_1 C_1 V_{{clamp}}}}{{V_{{clamp}}^2 - V_{{ref}}^2}} = {T*1000:.3f}\\text{{ ms}}, \\qquad f_o = \\frac{{1}}{{T}} = {fo:.2f}\\text{{ Hz}}$$
+                2. **Peak-to-Peak Output Voltage ($V_{{o(pp)}}$):**
+                   $$V_{{o(pp)}} = 2 \\left(\\frac{{R_2}}{{R_3}}\\right) V_Z = {vo_pp_ideal:.2f}\\text{{ V}} \\quad (\\text{{with }} R_3 > R_2)$$
+                   *(If Zener diodes $D_1, D_2$ are omitted, $V_Z$ is replaced by $V_{{sat}}$.)*
+
+                3. **Nominal Frequency of Oscillation ($f_o$):**
+                   When $R_4$ is centered ($V_{{ref}} = 0\\text{{ V}}$), the frequency is given by Gayakwad’s standard equation:
+                   $$f_o = \\frac{{R_3}}{{4 R_1 C_1 R_2}} = {(R3 / (4.0 * R1 * C1 * R2)):.2f}\\text{{ Hz}}$$
+                   *(Offsetting the wiper of $R_4$ toward $+V_{{CC}}$ or $-V_{{EE}}$ adjusts the duty cycle to produce the sawtooth ramp, shifting the actual operating frequency to **$f_o = {fo:.2f}\\text{{ Hz}}$**.)*
                 """
             )
