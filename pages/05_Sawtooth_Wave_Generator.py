@@ -11,8 +11,8 @@ render_sidebar_header()
 st.title("Experiment 5: Sawtooth Wave Generator using Op-Amp ($\mu$A741)")
 st.markdown(
     "Design and construct a sawtooth wave generator using **$\mu$A741** comparator ($A_1$), integrator ($A_2$), "
-    "and duty-cycle potentiometer $R_4$ connected to $A_2$'s non-inverting terminal, study the output waveform, "
-    "and repeat for three frequencies (*Gayakwad, Section 7.8*)."
+    "back-to-back Zener clamp ($D_1, D_2$), and duty-cycle potentiometer ($R_4$), plot the output waveform, "
+    "and repeat the experiment for two more frequencies (*Gayakwad, Section 7.8*)."
 )
 
 # -------------------------------------------------------------------------
@@ -42,7 +42,7 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
         r3_tap = d.add(elm.Dot())
         tap_x, tap_y = r3_tap.center
 
-        # Rheostat / Potentiometer R3 connected between Node P and r3_tap (BEFORE diodes!)
+        # Rheostat / Potentiometer R3 connected between Node P and r3_tap (BEFORE diodes)
         d.add(elm.Potentiometer().right().at((px, py)).tox(tap_x).label(f'$R_3$\n{r3_kohm:.0f} kΩ', loc='bottom', fontsize=8))
         d.add(elm.Line().up().at((tap_x, py)).toy(tap_y))
 
@@ -109,17 +109,11 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
 # -------------------------------------------------------------------------
 def simulate_sawtooth_generator(R1, C1, R2, R3, V_ref, use_zener, vz, vcc, t_span, num_pts=4000):
     vsat = max(vcc - 1.5, 0.5)
-    # Clamped square-wave amplitude at v'_o: ±(Vz + 0.7V) if Zener clamp active, else ±Vsat
     v_clamp = min(vz + 0.7, vsat) if use_zener else vsat
 
-    # Comparator A1 switches when v_P = (R3/(R2+R3))*v_o + (R2/(R2+R3))*v'_o crosses 0 V:
-    # Thus v_o switches at ±(R2 / R3) * v_clamp
     v_peak_ideal = (R2 / R3) * v_clamp
     vo_pp_ideal = 2.0 * v_peak_ideal
 
-    # Voltage across R1 during the two states of v'_o:
-    # State 1 (v'_o = -v_clamp): current flows out of summing node -> v_o ramps UP at rate (v_clamp + V_ref)/(R1*C1)
-    # State 2 (v'_o = +v_clamp): current flows into summing node -> v_o ramps DOWN at rate (v_clamp - V_ref)/(R1*C1)
     if abs(V_ref) >= 0.96 * v_clamp:
         return None  # Latch-up if |V_ref| >= v_clamp
 
@@ -187,9 +181,9 @@ with ctrl_col:
         "Potentiometer $R_4$ Wiper Position (%)",
         min_value=-85,
         max_value=85,
-        value=-65,
+        value=-35,
         step=5,
-        help="0% = symmetric triangular wave (50% duty cycle). Moving toward -85% or +85% creates a sawtooth wave."
+        help="0% = symmetric triangular wave. Moving toward -85% or +85% creates a sawtooth wave."
     )
 
     st.subheader("2. Comparator Stage ($R_2, R_3$ & Zeners)")
@@ -244,8 +238,8 @@ res = simulate_sawtooth_generator(R1, C1, R2, R3, V_ref, use_zener, vz, vcc, t_s
 with disp_col:
     if res is None:
         st.error(
-            f"**Integrator Latch-Up ($|V_{{ref}}| = {abs(V_ref):.2f}\\text{{ V}} \\ge V_{{clamp}}$):** "
-            f"The DC reference voltage on Pin 3 of $A_2$ from potentiometer $R_4$ exceeds the comparator output swing, "
+            f"**Integrator Latch-Up ($|V_{{ref}}| = {abs(V_ref):.2f}\\text{{ V}} \\ge V_{{clamp}} = {min(vz+0.7, max(vcc-1.5,0.5)):.2f}\\text{{ V}}$):** "
+            f"The DC reference voltage on Pin 3 of $A_2$ from potentiometer $R_4$ exceeds the clamped comparator swing, "
             f"preventing the integrator from reversing direction. Move the $R_4$ wiper closer to center ($0\\%$)."
         )
         fig_sch = draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_zener, vz, vcc)
@@ -337,7 +331,7 @@ with disp_col:
         with tab_multi:
             st.markdown(
                 "Select three integrator resistor values ($R_{1a}, R_{1b}, R_{1c}$) with fixed $C_1 = "
-                f"{c1_uf:.3f}\\text{{ µF}}$, $R_2 = {r2_kohm:.1f}\\text{{ k}}\\Omega$, $R_3 = {r3_kohm:.1f}\\text{{ k}}\\Omega$, and $V_{{ref}} = {V_ref:+.2f}\\text{{ V}}$ "
+                f"{c1_uf:.3f}\\text{{ µF}}$, $R_2 = {r2_kohm:.1f}\\text{{ k}}\\Omega$, $R_3 = {r3_kohm:.0f}\\text{{ k}}\\Omega$, and $V_{{ref}} = {V_ref:+.2f}\\text{{ V}}$ "
                 "to compare the sawtooth outputs across **three different frequencies**:"
             )
 
