@@ -44,8 +44,8 @@ def draw_555_astable_schematic(ra_kohm, rb_kohm, c_uf, c1_uf, vcc):
         d.add(ic)
 
         # --- Top Supply Rail +VCC connected to Pins 8 and 4 ---
-        p8_x, p8_y = ic.in8
-        p4_x, p4_y = ic.in4
+        p8_x, p8_y = ic.anchors['8']
+        p4_x, p4_y = ic.anchors['4']
         top_rail_y = p8_y + 0.75
 
         d.add(elm.Line().up().at((p8_x, p8_y)).toy(top_rail_y))
@@ -56,12 +56,11 @@ def draw_555_astable_schematic(ra_kohm, rb_kohm, c_uf, c1_uf, vcc):
         d.add(elm.Line().left().tox(p8_x))
 
         # --- Left RC Timing Network (RA, RB, C) connected to Pins 7, 6, 2 ---
-        p7_x, p7_y = ic.in7
-        p6_x, p6_y = ic.in6
-        p2_x, p2_y = ic.in2
+        p7_x, p7_y = ic.anchors['7']
+        p6_x, p6_y = ic.anchors['6']
+        p2_x, p2_y = ic.anchors['2']
 
         rc_x = p7_x - 1.35
-        # Extend top supply rail left to rc_x
         d.add(elm.Line().left().at((p8_x, top_rail_y)).tox(rc_x))
 
         # Resistor RA from top supply rail down to Pin 7 level
@@ -86,16 +85,16 @@ def draw_555_astable_schematic(ra_kohm, rb_kohm, c_uf, c1_uf, vcc):
         d.add(elm.Ground())
 
         # --- Bottom Pins: Pin 1 (Ground) and Pin 5 (Bypass C1 = 0.01 uF) ---
-        p1_x, p1_y = ic.in1
+        p1_x, p1_y = ic.anchors['1']
         d.add(elm.Line().down().at((p1_x, p1_y)).length(0.65))
         d.add(elm.Ground())
 
-        p5_x, p5_y = ic.in5
+        p5_x, p5_y = ic.anchors['5']
         d.add(elm.Capacitor().down().at((p5_x, p5_y)).length(1.05).label(f'$C_1$\n{c1_uf:.2f} uF', loc='right', fontsize=8))
         d.add(elm.Ground())
 
         # --- Output Pin 3 ---
-        p3_x, p3_y = ic.in3
+        p3_x, p3_y = ic.anchors['3']
         d.add(elm.Line().right().at((p3_x, p3_y)).length(1.1).label('Output (Pin 3)', loc='right', fontsize=8.8))
 
         return d.draw(show=False).fig
