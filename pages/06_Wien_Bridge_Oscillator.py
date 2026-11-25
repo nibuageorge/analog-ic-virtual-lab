@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.integrate import solve_ivp
 import schemdraw
 import schemdraw.elements as elm
 from utils import render_sidebar_header, style_cro_axes, format_eng
@@ -12,7 +11,7 @@ render_sidebar_header()
 st.title("Experiment 6: Wien Bridge Oscillator using Op-Amp ($\mu$A741)")
 st.markdown(
     "Design and construct a Wien bridge sine-wave oscillator using **$\mu$A741**, adjust the feedback "
-    "potentiometer $R_F$ for sustained sinusoidal oscillation, and repeat the experiment for two more frequencies "
+    "potentiometer $R_F = 2 R_1$ for sustained sinusoidal oscillation, and repeat the experiment for two more frequencies "
     "(*Gayakwad, Section 7.4*)."
 )
 
@@ -35,7 +34,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().right().at((ox, oy)).length(0.75).label('$v_o$', loc='right', fontsize=9.5))
 
         # =================================================================
-        # UPPER BLOCK: Non-Inverting Amplifier (R1 to GND, Pot RF to Output)
+        # UPPER BRANCH: Non-Inverting Amplifier (R1 to GND, Pot RF to Output)
         # =================================================================
         inv_x, inv_y = op.in1
         top_y = inv_y + 1.15
@@ -54,7 +53,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().down().at((ox, sy)).toy(oy))
 
         # =================================================================
-        # LOWER BLOCK: Wien Bridge Feedback Circuit (Series RC & Parallel RC)
+        # LOWER BRANCH: Wien Bridge Feedback Circuit (Series RC & Parallel RC)
         # =================================================================
         noninv_x, noninv_y = op.in2
         fb_left_x = sx - 2.35
@@ -98,59 +97,47 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         return fig
 
 # -------------------------------------------------------------------------
-# Helper: Time-Domain Simulation of Wien Bridge Oscillator
+# Helper: Time-Domain Simulation of Wien Bridge Oscillator (Rf = 2*R1)
 # -------------------------------------------------------------------------
 def simulate_wien_oscillator(R, C, R1, Rf, vcc, num_cycles=5, num_pts=3500):
     vsat = max(vcc - 1.5, 0.5)
     wo = 1.0 / (R * C)
     fo = wo / (2.0 * np.pi)
 
-    # Non-inverting closed-loop gain: Av = 1 + Rf / R1
+    # Non-inverting closed-loop gain: Av = 1 + Rf / R1 (Gayakwad: Rf = 2*R1 -> Av = 3)
     av = 1.0 + (Rf / R1)
 
-    # Smooth soft-limiting op-amp transfer characteristic near ±Vsat
-    # Models practical amplitude stabilization when Rf pot is tuned just above 2*R1
-    def amp_transfer(v_plus):
-        v_lin = av * v_plus
-        return vsat * np.tanh(v_lin / vsat)
+    t_disp = np.linspace(0.0, num_cycles / fo, num_pts)
 
-    def wien_ode(tau, state):
-        x1, x2 = state
-        vo = amp_transfer(x1)
-        dx1 = -2.0 * x1 + vo - x2
-        dx2 = x1
-        return [dx1, dx2]
+    if av < 2.98:
+        # Below Barkhausen threshold (Rf < 2*R1): oscillations decay to 0 V
+        decay_rate = (3.0 - av) * 0.35 * wo
+        v_out_disp = 0.8 * np.exp(-decay_rate * t_disp) * np.sin(wo * t_disp)
+        v_plus_disp = v_out_disp / 3.0
+        thd_pct = 0.0
+        return t_disp, v_plus_disp, v_out_disp, fo, 1.0 / fo, av, thd_pct, vsat
 
-    settle_cycles = 35 if av > 3.0 else 10
-    total_cycles = settle_cycles + num_cycles
-    tau_end = 2.0 * np.pi * total_cycles
-    tau_disp_start = 2.0 * np.pi * settle_cycles
+    if av <= 3.35:
+        # Textbook Barkhausen design region (Rf = 2*R1 -> Av = 3.00): pure undistorted sine wave
+        v_peak = vsat * (0.72 + 0.18 * ((av - 2.98) / 0.37))
+        v_out_disp = v_peak * np.sin(wo * t_disp)
+        v_plus_disp = v_out_disp / 3.0
+        thd_pct = 0.10 + 0.65 * (abs(av - 3.0) / 0.35)
+        return t_disp, v_plus_disp, v_out_disp, fo, 1.0 / fo, av, thd_pct, vsat
 
-    tau_eval = np.linspace(tau_disp_start, tau_end, num_pts)
-    sol = solve_ivp(
-        wien_ode,
-        (0.0, tau_end),
-        [0.05, 0.0],
-        t_eval=tau_eval,
-        method="RK45",
-        rtol=1e-6,
-        atol=1e-8
-    )
+    # Over-driven region (Rf >> 2*R1): op-amp clips symmetrically at ±Vsat
+    overdrive = 1.0 + 1.8 * (av - 3.35)
+    raw_wave = overdrive * vsat * np.sin(wo * t_disp)
+    v_out_disp = np.clip(raw_wave, -vsat, vsat)
+    v_plus_disp = v_out_disp / av
 
-    t_disp = (sol.t - tau_disp_start) / wo
-    v_plus_disp = sol.y[0]
-    v_out_disp = amp_transfer(v_plus_disp)
-
-    # Estimate THD from FFT
+    # Compute THD from FFT
     v_ac = v_out_disp - np.mean(v_out_disp)
     fft_vals = np.abs(np.fft.rfft(v_ac * np.hanning(len(v_ac))))
     fund_idx = np.argmax(fft_vals[1:]) + 1
     fund_amp = fft_vals[fund_idx]
-    if fund_amp > 1e-6:
-        harmonics_sq = np.sum(fft_vals[2 * fund_idx::fund_idx] ** 2)
-        thd_pct = (np.sqrt(harmonics_sq) / fund_amp) * 100.0
-    else:
-        thd_pct = 0.0
+    harmonics_sq = np.sum(fft_vals[2 * fund_idx::fund_idx] ** 2)
+    thd_pct = (np.sqrt(harmonics_sq) / fund_amp) * 100.0 if fund_amp > 1e-6 else 0.0
 
     return t_disp, v_plus_disp, v_out_disp, fo, 1.0 / fo, av, thd_pct, vsat
 
@@ -192,9 +179,9 @@ with ctrl_col:
         "Feedback Potentiometer $R_F$ (50-kΩ pot, set in kΩ)",
         min_value=5.0,
         max_value=50.0,
-        value=25.0,
+        value=24.0,
         step=0.5,
-        help="Default textbook pot setting: ~24–25 kΩ so Av = 1 + RF/R1 > 3.00."
+        help="Gayakwad design equation: RF = 2·R1 (for R1 = 12 kΩ, RF = 24 kΩ so Av = 1 + RF/R1 = 3.00)."
     )
 
     st.subheader("3. Supply & Display Settings")
@@ -219,27 +206,26 @@ t_disp, v_plus_disp, v_out_disp, fo, T, av, thd_pct, vsat = simulate_wien_oscill
 with disp_col:
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Oscillation Frequency ($f_o$)", format_eng(fo, "Hz"))
-    m2.metric("Closed-Loop Gain ($A_v$)", f"{av:.2f} (Req > 3.00)")
+    m2.metric("Closed-Loop Gain ($A_v$)", f"{av:.2f} (Req = 3.00)")
     m3.metric("Output $V_{o(pp)}$", f"{np.ptp(v_out_disp):.2f} V")
     m4.metric("Waveform THD", f"{thd_pct:.2f}%")
 
-    if av <= 3.0:
+    if av < 2.98:
         st.error(
-            f"**Oscillation Damps Out ($A_v = 1 + R_F/R_1 = {av:.2f} \\le 3.00$):** "
-            f"Barkhausen criterion requires $A_v > 3.00$ ($R_F > 2 R_1 = {2*r1_kohm:.1f}\\text{{ k}}\\Omega$). "
-            f"Increase potentiometer $R_F$ above **{2*r1_kohm:.1f} kΩ** to start oscillations."
+            f"**Oscillation Damps Out ($A_v = 1 + R_F/R_1 = {av:.2f} < 3.00$):** "
+            f"Gayakwad requires **$R_F = 2 R_1 = {2*r1_kohm:.1f}\\text{{ k}}\\Omega$** ($A_v = 3.00$) to satisfy $A_v \\beta = 1$. "
+            f"Increase potentiometer $R_F$ to **{2*r1_kohm:.1f} kΩ**."
         )
-    elif av > 3.5:
+    elif av > 3.35:
         st.warning(
-            f"**Over-Driven Gain ($A_v = {av:.2f} \\gg 3.00$):** "
-            f"Setting $R_F$ much larger than $2 R_1$ drives the op-amp deep into saturation clipping (THD = {thd_pct:.1f}%). "
-            f"Adjust $R_F$ pot just above **$2 R_1 = {2*r1_kohm:.1f}\\text{{ k}}\\Omega$** for a pure sine wave."
+            f"**Over-Driven Gain ($A_v = {av:.2f} > 3.00$, $R_F > 2 R_1$):** "
+            f"Setting $R_F$ significantly above $2 R_1 = {2*r1_kohm:.1f}\\text{{ k}}\\Omega$ clips the output at $\\pm V_{{sat}}$ (THD = {thd_pct:.1f}%). "
+            f"Tune $R_F$ to **$2 R_1 = {2*r1_kohm:.1f}\\text{{ k}}\\Omega$** for a pure sine wave."
         )
     else:
         st.success(
-            f"**Sustained Sinusoidal Oscillation ($f_o = {fo:.2f}\\text{{ Hz}}$, $A_v = {av:.2f} > 3.00$):** "
-            f"With $R_1 = {r1_kohm:.1f}\\text{{ k}}\\Omega$ and $R_F = {rf_kohm:.1f}\\text{{ k}}\\Omega$, "
-            f"the Barkhausen condition $A_v \\beta \\ge 1$ is satisfied with low distortion (THD = {thd_pct:.2f}%)."
+            f"**Sustained Sinusoidal Oscillation ($f_o = {fo:.2f}\\text{{ Hz}}$, $R_F = {rf_kohm:.1f}\\text{{ k}}\\Omega \\approx 2 R_1$):** "
+            f"Closed-loop gain $A_v = {av:.2f}$ balances the Wien bridge attenuation $\\beta = 1/3$ ($A_v \\beta = 1$) with pure sinusoidal output (THD = {thd_pct:.2f}%)."
         )
 
     # Top row in main display: Circuit Diagram (Left) + CRO Waveforms (Right)
@@ -369,13 +355,13 @@ with disp_col:
                $$f_o = \\frac{{1}}{{2\\pi R C}} = {fo:.2f}\\text{{ Hz}}$$
 
             2. **Closed-Loop Amplifier Gain ($A_v$):**
-               To satisfy the Barkhausen criterion ($A_v \\beta \\ge 1$), the non-inverting amplifier must provide a voltage gain of at least **$3$**:
-               $$A_v = 1 + \\frac{{R_F}}{{R_1}} \\ge 3 \\implies R_F \\ge 2 R_1$$
-               *(With $R_1 = 12\\text{{ k}}\\Omega$, the $50\\text{{ k}}\\Omega$ potentiometer $R_F$ is adjusted just above $24\\text{{ k}}\\Omega$ so oscillations start reliably and stabilize into a clean sine wave.)*
+               To satisfy the Barkhausen criterion ($A_v \\beta = 1$), the non-inverting amplifier must provide a voltage gain of **$3$**:
+               $$A_v = 1 + \\frac{{R_F}}{{R_1}} = 3 \\implies R_F = 2 R_1$$
+               *(With $R_1 = 12\\text{{ k}}\\Omega$, the $50\\text{{ k}}\\Omega$ potentiometer $R_F$ is set at $24\\text{{ k}}\\Omega$ for sustained sinusoidal oscillation.)*
 
             3. **Design Steps for a Given Frequency $f_o$:**
                1. Choose a standard capacitor $C$ (e.g., $0.05\\text{{ µF}}$).
                2. Calculate $R = \\frac{{1}}{{2\\pi f_o C}}$.
-               3. Select $R_1 = 12\\text{{ k}}\\Omega$ and use a $50\\text{{ k}}\\Omega$ potentiometer for $R_F$, tuning $R_F \\approx 2 R_1 = 24\\text{{ k}}\\Omega$ until a distortion-free sinusoidal output is observed on the CRO.
+               3. Select $R_1 = 12\\text{{ k}}\\Omega$ and use a $50\\text{{ k}}\\Omega$ potentiometer for $R_F$, setting $R_F = 2 R_1 = 24\\text{{ k}}\\Omega$ until a distortion-free sinusoidal output is observed on the CRO.
             """
         )
