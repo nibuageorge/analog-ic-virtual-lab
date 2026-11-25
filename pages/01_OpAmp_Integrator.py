@@ -12,7 +12,7 @@ render_sidebar_header()
 st.title("Experiment 1: Practical Op-Amp Integrator ($\mu$A741)")
 st.markdown(
     "Design and construct a practical integrator using **$\mu$A741** for **sine wave** and **square wave** inputs, "
-    "and study the output waveform and frequency response across different frequencies (*Gayakwad, Section 6.13*)."
+    " (Ref.Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
