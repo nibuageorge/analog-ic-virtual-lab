@@ -11,7 +11,8 @@ render_sidebar_header()
 st.title("Experiment 15: Voltage-to-Current Converter with Grounded Load ($\\mu$A741)")
 st.markdown(
     "Design and construct a **Voltage-to-Current (V-to-I) Converter with Grounded Load** using **$\\mu$A741**, "
-    " (Ref. Gayakwad)."
+    "verify the load-independent current relation $I_L = V_{in} / R$, plot $I_L$ vs. $V_{in}$ and $I_L$ vs. $R_L$, "
+    "and observe AC voltage-to-current conversion on the CRO (*Gayakwad, Section 6-9, Figure 6-19, Eq. 6-21b*)."
 )
 
 # -------------------------------------------------------------------------
@@ -132,11 +133,9 @@ R = r_kohm * 1e3
 RL = rl_kohm * 1e3
 vsat = max(vcc - 1.0, 0.5)
 
-# Ideal load current IL = Vin / R, load voltage V1 = IL * RL, op-amp output Vo = 2 * V1
 il_ideal_amp = vin_dc / R
 vo_ideal = 2.0 * il_ideal_amp * RL
 
-# If |Vo_ideal| exceeds Vsat, op-amp saturates at +/- Vsat and V1 = (Vin + Vsat) / (2 + R/RL)
 if abs(vo_ideal) > vsat:
     vo_actual = float(np.sign(vo_ideal) * vsat)
     v1_actual = (vin_dc + vo_actual) / (2.0 + (R / RL))
@@ -184,12 +183,12 @@ with disp_col:
     schem_col, plot_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (Gayakwad)**")
+        st.markdown("**Circuit Diagram (*Gayakwad Fig. 6-19*)**")
         fig_sch = draw_v_to_i_schematic(r_kohm, rl_kohm, vin_dc, il_actual_ma, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
         st.caption(
-            f"**Gayakwad):** $I_L = V_{{in}} / R$; $V_o = 2 V_1$; "
+            f"**Gayakwad Eq. (6-21b):** $I_L = V_{{in}} / R$; $V_o = 2 V_1$; "
             f"Valid for grounded load $R_L \\le R = {r_kohm:.1f}\\text{{ k}}\\Omega$."
         )
 
@@ -231,7 +230,7 @@ with disp_col:
         ax_rl.scatter([rl_kohm], [il_actual_ma], color="#d62728", zorder=6, s=45)
         y_rl_max = max(abs((vin_dc / R) * 1e3) * 1.4, 0.2)
         ax_rl.set_ylim(-y_rl_max, y_rl_max)
-style_cro_axes(
+        style_cro_axes(
             ax_rl,
             title=r"Load Regulation: $I_L$ vs. Grounded Load $R_L$ (Constant $I_L$ for $R_L \leq R$)",
             xlabel="Grounded Load Resistance $R_L$ (kOhm)",
@@ -246,7 +245,7 @@ style_cro_axes(
     tab_cro, tab_obs, tab_theory = st.tabs([
         "AC Voltage-to-Current Waveforms (CRO)",
         "Observation Tables (IL vs. Vin & IL vs. RL)",
-        "Theory & Derivation (Gayakwad)"
+        "Theory & Derivation (Gayakwad Sec. 6-9)"
     ])
 
     with tab_cro:
@@ -327,7 +326,7 @@ style_cro_axes(
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Derivation (R. A. Gayakwad)
+            ### Theory & Derivation (*R. A. Gayakwad, Section 6-9, Figure 6-19, p. 223*)
 
             1. **Kirchhoff's Current Law (KCL) at Node $V_1$:**
                Assuming ideal op-amp input currents $I_B \\cong 0$, summing the currents entering non-inverting node $V_1$ gives:
@@ -339,8 +338,8 @@ style_cro_axes(
                $$2 V_1 = V_{{in}} + V_o - I_L R \\implies V_{{in}} = I_L R \\implies I_L = \\frac{{V_{{in}}}}{{R}} \\quad \\text{{(Eq. 6-21b)}}$$
 
             3. **Design Rules & Applications:**
-               * **Equal Bridge Resistors:** All four bridge resistors $R$ must be matched in value ($1\\%$ tolerance) so that $I_L$ is completely independent of the grounded load resistance $R_L$[cite: 13].
-               * **Load Size Limit ($R_L \\le R$):** Since $V_o = 2 V_1 = 2 I_L R_L$, the circuit performs satisfactorily provided the load size satisfies **$R_L \\le R$** (preventing op-amp output saturation at $\\pm V_{{sat}}$)[cite: 13].
-               * **Applications:** Driving grounded **LEDs**, **Zener diode testers**, **analog meter movements**, and **4–20 mA industrial current transmitters**[cite: 13].
+               * **Equal Bridge Resistors:** All four bridge resistors $R$ must be matched in value ($1\\%$ tolerance) so that $I_L$ is completely independent of the grounded load resistance $R_L$.
+               * **Load Size Limit ($R_L \\le R$):** Since $V_o = 2 V_1 = 2 I_L R_L$, the circuit performs satisfactorily provided the load size satisfies **$R_L \\le R$** (preventing op-amp output saturation at $\\pm V_{{sat}}$).
+               * **Applications:** Driving grounded **LEDs**, **Zener diode testers**, **analog meter movements**, and **4–20 mA industrial current transmitters**.
             """
         )
