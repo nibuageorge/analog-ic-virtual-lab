@@ -1,86 +1,62 @@
-import streamlit as st
-import matplotlib.pyplot as plt
-import numpy as np
-
 def render_sidebar_header():
     st.markdown(
         """
         <style>
-        /* Compact, proportional layout & typography across all experiment pages */
-        .block-container {
+        /* Main window layout & typography */
+        section[data-testid="stMain"] .block-container {
             padding-top: 1.4rem !important;
             padding-bottom: 1.5rem !important;
             padding-left: 2rem !important;
             padding-right: 2rem !important;
         }
-        h1 {
+        section[data-testid="stMain"] h1 {
             font-size: 1.5rem !important;
             line-height: 1.25 !important;
-            margin-bottom: 0.35rem !important;
         }
-        h2 {
+        section[data-testid="stMain"] h2 {
             font-size: 1.15rem !important;
-            line-height: 1.25 !important;
         }
-        h3 {
+        section[data-testid="stMain"] h3 {
             font-size: 1.0rem !important;
-            line-height: 1.25 !important;
-            margin-top: 0.5rem !important;
-            margin-bottom: 0.25rem !important;
         }
-        /* Fix st.metric value truncation (...) across all 4-column metric bars */
-        [data-testid="stMetricValue"],
-        [data-testid="stMetricValue"] > div {
-            font-size: 1.12rem !important;
+        /* Shrink main-window st.metric numbers & prevent '...' truncation */
+        section[data-testid="stMain"] [data-testid="stMetricValue"],
+        section[data-testid="stMain"] [data-testid="stMetricValue"] * {
+            font-size: 1.05rem !important;
             line-height: 1.25 !important;
             white-space: normal !important;
-            overflow-wrap: break-word !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
         }
-        [data-testid="stMetricLabel"],
-        [data-testid="stMetricLabel"] > div,
-        [data-testid="stMetricLabel"] p {
-            font-size: 0.80rem !important;
+        section[data-testid="stMain"] [data-testid="stMetricLabel"],
+        section[data-testid="stMain"] [data-testid="stMetricLabel"] * {
+            font-size: 0.78rem !important;
             line-height: 1.2 !important;
-        }
-        /* Tighter slider & widget labels */
-        .stSlider label p, .stNumberInput label p, .stCheckbox label p {
-            font-size: 0.85rem !important;
-        }
-        /* Compact body markdown & alert boxes */
-        .stMarkdown p, .stAlert p {
-            font-size: 0.88rem !important;
-            line-height: 1.4 !important;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-def style_cro_axes(ax, title="", xlabel="Time (ms)", ylabel="Voltage (V)"):
-    """Apply clean Dual-Trace CRO / laboratory oscilloscope styling."""
-    ax.set_title(title, fontsize=11, fontweight="bold", pad=8)
-    ax.set_xlabel(xlabel, fontsize=10)
-    ax.set_ylabel(ylabel, fontsize=10)
-    ax.axhline(0, color="#666666", linewidth=0.9, linestyle="-")
-    ax.grid(True, which="major", linestyle="--", linewidth=0.6, alpha=0.6)
-    ax.grid(True, which="minor", linestyle=":", linewidth=0.4, alpha=0.35)
-    ax.minorticks_on()
-
-def format_eng(value, unit=""):
-    """Format engineering values cleanly with SI prefixes."""
-    if value == 0:
-        return f"0 {unit}".strip()
-    prefixes = [
-        (1e9, "G"), (1e6, "M"), (1e3, "k"), (1, ""),
-        (1e-3, "m"), (1e-6, "µ"), (1e-9, "n"), (1e-12, "p")
-    ]
-    abs_val = abs(value)
-    for factor, prefix in prefixes:
-        if abs_val >= factor:
-            return f"{value / factor:.2f} {prefix}{unit}".strip()
-    return f"{value:.2e} {unit}".strip()
-
-def clip_opamp(v_out, v_cc):
-    """Apply realistic uA741 saturation limits (V_sat ≈ V_CC - 1.5 V)."""
-    v_sat = max(v_cc - 1.5, 0.5)
-    return np.clip(v_out, -v_sat, v_sat), v_sat
+    st.sidebar.markdown("---")
+    st.sidebar.markdown(
+        """
+        <div style="
+            background-color: #f0f4f8;
+            color: #1e293b;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border-left: 4px solid #1f77b4;
+            font-size: 0.85rem;
+            line-height: 1.45;
+            margin-top: 8px;
+        ">
+            This Virtual Lab is developed by<br>
+            <strong>Dr. Nibu A George</strong>,<br>
+            Associate Professor of Physics,<br>
+            Baselius College (Autonomous),<br>
+            Kottayam
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
