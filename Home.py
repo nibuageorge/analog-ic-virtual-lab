@@ -26,7 +26,7 @@ OPAMP_EXPERIMENTS = [
     ("pages/04_Triangular_Wave_Generator.py", "4. Triangular Wave Generator using Op-Amp (µA741)", "🔺"),
     ("pages/05_Sawtooth_Wave_Generator.py", "5. Sawtooth Wave Generator using Op-Amp (µA741)", "📐"),
     ("pages/06_Wien_Bridge_Oscillator.py", "6. Wien Bridge Oscillator with Amplitude Stabilization", "〰️"),
-    ("pages/07_OpAmp_Schmitt_Trigger.py", "7. Schmitt Trigger & Hysteresis Curve (µA741)", "🔁"),
+    ("pages/07_Schmitt_Trigger_Hysteresis.py", "7. Schmitt Trigger & Hysteresis Curve (µA741)", "🔁"),
     ("pages/08_RC_Phase_Shift_Oscillator.py", "8. RC Phase Shift Oscillator using Op-Amp (µA741)", "🌀"),
     ("pages/09_Low_Pass_Butterworth_Filter.py", "9. First & Second Order Low-Pass Butterworth Filter", "🔽"),
     ("pages/10_High_Pass_Butterworth_Filter.py", "10. First & Second Order High-Pass Butterworth Filter", "🔼"),
