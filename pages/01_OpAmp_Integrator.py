@@ -111,15 +111,16 @@ fb = 1.0 / (2.0 * np.pi * R1 * CF)   # Unity-gain frequency:   f_b = 1 / (2π R_
 dc_gain = -RF / R1
 
 # -------------------------------------------------------------------------
-# Exact Time-Domain Simulation (Solving 1st-Order ODE of Practical Integrator)
+# Exact Time-Domain Simulation (SciPy lsim requires T[0] >= 0)
 # -------------------------------------------------------------------------
 num_cycles = 4
 T = 1.0 / freq
 t_total = num_cycles * T
 settle_cycles = max(5, int(np.ceil(5.0 / (2.0 * np.pi * fa * T))))
 settle_cycles = min(settle_cycles, 80)
+t_settle = settle_cycles * T
 
-t_sim = np.linspace(-settle_cycles * T, t_total, 4000)
+t_sim = np.linspace(0.0, t_settle + t_total, 4000)
 Vp = vin_pp / 2.0
 
 if wave_type == "Sine Wave":
@@ -130,8 +131,9 @@ else:
 sys_integrator = signal.TransferFunction([-1.0 / (R1 * CF)], [1.0, 1.0 / (RF * CF)])
 _, v_out_full, _ = signal.lsim(sys_integrator, U=v_in_full, T=t_sim)
 
-mask = t_sim >= 0
-t_disp = t_sim[mask]
+# Slice steady-state display window [t_settle, t_settle + t_total] and shift to 0
+mask = t_sim >= t_settle
+t_disp = t_sim[mask] - t_settle
 vin_disp = v_in_full[mask]
 vout_ideal = v_out_full[mask]
 vout_disp, vsat = clip_opamp(vout_ideal, vcc)
