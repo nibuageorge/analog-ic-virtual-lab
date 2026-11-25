@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 7: Schmitt Trigger & Hysteresis Curve using Op-Amp ($\mu$A741)")
 st.markdown(
-    "Design and construct an inverting comparator with positive feedback (**Schmitt Trigger**) using **$\mu$A741**, "
-    "observe the input/output waveforms, and plot the **$v_o$ vs. $v_{in}$ hysteresis curve** "
-    "(*Gayakwad, Section 8.3, Figure 8-4*)."
+    "Design and construct a Schmitt trigger using using **$\mu$A741**"
+    "(Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
