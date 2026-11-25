@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 18: Monostable Multivibrator using IC 555 Timer")
 st.markdown(
-    "Design and construct a **Monostable Multivibrator (One-Shot)** using **IC 555 Timer**, "
-    "plot the **negative-going trigger input**, **output pulse ($t_p = 1.1 R_A C$)**, and **capacitor charging waveform ($v_C$)**, "
-    "and repeat the experiment for **one more frequency** (*Gayakwad, Section 9-4-1, Figure 9-16, Eq. 9-2*)."
+    "Design and construct a **Monostable Multivibrator** using **IC 555 Timer**, "
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -251,7 +250,7 @@ with disp_col:
     schem_col, cro_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 9-16a*)**")
+        st.markdown("**Circuit Diagram (Gayakwad)**")
         fig_sch = draw_555_monostable_schematic(ra_kohm, c_uf, c1_uf, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -313,7 +312,7 @@ with disp_col:
     # ---------------------------------------------------------------------
     tab_repeat, tab_theory = st.tabs([
         "Repeat Experiment for One More Frequency",
-        "Theory & Design Equations (Gayakwad Sec. 9-4-1)"
+        "Theory & Design Equations (Gayakwad)"
     ])
 
     with tab_repeat:
@@ -402,7 +401,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Equations (*R. A. Gayakwad, Section 9-4-1, Figure 9-16*)
+            ### Theory & Design Equations (R. A. Gayakwad)
 
             1. **Monostable Operation:**
                * In the stable state (before triggering), internal discharge transistor $Q_1$ is ON, clamping capacitor $C$ at $0\\text{{ V}}$, and the output (Pin 3) is LOW ($0\\text{{ V}}$)[cite: 10].
