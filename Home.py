@@ -35,12 +35,12 @@ OPAMP_EXPERIMENTS = [
     ("pages/13_Narrow_Band_Pass_Filter.py", "13. First Order Narrow Band-Pass Butterworth Filter", "📶"),
     ("pages/14_Current_to_Voltage_Converter.py", "14. Current-to-Voltage Converter (µA741)", "🔌"),
     ("pages/15_Voltage_to_Current_Converter.py", "15. Voltage-to-Current Converter (µA741)", "🔋"),
-    ("pages/18_Differential_Amplifier_CMRR.py", "18. Differential Amplifier & CMRR Measurement (µA741)", "⚖️"),
+    ("pages/16_Differential_Amplifier_CMRR.py", "16. Differential Amplifier & CMRR Measurement (µA741)", "⚖️"),
 ]
 
 TIMER_555_EXPERIMENTS = [
-    ("pages/16_555_Astable_Multivibrator.py", "16. Astable Multivibrator using IC 555 Timer", "⏲️"),
-    ("pages/17_555_Monostable_Multivibrator.py", "17. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
+    ("pages/17_555_Astable_Multivibrator.py", "17. Astable Multivibrator using IC 555 Timer", "⏲️"),
+    ("pages/18_555_Monostable_Multivibrator.py", "18. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
 
 ]
 
