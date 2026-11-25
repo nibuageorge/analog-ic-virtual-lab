@@ -11,8 +11,7 @@ render_sidebar_header()
 st.title("Experiment 11: First-Order High-Pass Butterworth Filter ($\mu$A741)")
 st.markdown(
     "Design and construct a first-order high-pass Butterworth active filter using **$\mu$A741**, "
-    "plot its frequency response curve, and determine the **passband gain ($A_F$)**, **low cutoff frequency ($f_L$)**, "
-    "and **stopband roll-off rate ($+20\\text{ dB/decade}$)** (*Gayakwad, Section 7.5, Figure 7-5*)."
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -194,7 +193,7 @@ with disp_col:
         )
 
     with resp_col:
-        st.markdown("**Frequency Response Curve (*Gayakwad Fig. 7-5b*)**")
+        st.markdown("**Frequency Response Curve (*Gayakwad)**")
         fig_freq, (ax_db, ax_lin) = plt.subplots(2, 1, figsize=(7.6, 5.3), sharex=True)
 
         # Top Plot: Magnitude Response in dB (Bode Magnitude Plot)
