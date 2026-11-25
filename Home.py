@@ -40,8 +40,7 @@ OPAMP_EXPERIMENTS = [
 TIMER_555_EXPERIMENTS = [
     ("pages/16_555_Astable_Multivibrator.py", "16. Astable Multivibrator using IC 555 Timer", "⏲️"),
     ("pages/17_555_Monostable_Multivibrator.py", "17. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
-    ("pages/18_555_Voltage_Controlled_Oscillator.py", "18. Voltage Controlled Oscillator (VCO) using IC 555", "🎛️"),
-    ("pages/19_555_Schmitt_Trigger.py", "19. Schmitt Trigger Circuit using IC 555 Timer", "🔀"),
+
 ]
 
 def render_experiment_list(exp_list):
