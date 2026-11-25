@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 from scipy import signal
 import schemdraw
 import schemdraw.elements as elm
-from utils import style_cro_axes, format_eng, clip_opamp
+from utils import render_sidebar_header, style_cro_axes, format_eng, clip_opamp
 
 st.set_page_config(page_title="Exp 1: Op-Amp Integrator", layout="wide")
+render_sidebar_header()
 
 st.title("Experiment 1: Practical Op-Amp Integrator ($\mu$A741)")
 st.markdown(
