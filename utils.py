@@ -3,21 +3,58 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def render_sidebar_header():
-    """Display developer and institutional attribution at the top of the sidebar."""
-    with st.sidebar:
-        st.markdown(
-            """
-            <div style="background-color: #f0f4f8; padding: 12px 14px; border-radius: 8px; border-left: 4px solid #1f77b4; margin-bottom: 12px;">
-                <p style="margin: 0; font-size: 0.88rem; color: #1e293b; line-height: 1.45;">
-                    This Virtual Lab is developed by<br>
-                    <strong>Dr. Nibu A George</strong>,<br>
-                    Associate Professor of Physics,<br>
-                    Baselius College (Autonomous), Kottayam
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        """
+        <style>
+        /* Compact, proportional layout & typography across all experiment pages */
+        .block-container {
+            padding-top: 1.4rem !important;
+            padding-bottom: 1.5rem !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+        h1 {
+            font-size: 1.5rem !important;
+            line-height: 1.25 !important;
+            margin-bottom: 0.35rem !important;
+        }
+        h2 {
+            font-size: 1.15rem !important;
+            line-height: 1.25 !important;
+        }
+        h3 {
+            font-size: 1.0rem !important;
+            line-height: 1.25 !important;
+            margin-top: 0.5rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        /* Fix st.metric value truncation (...) across all 4-column metric bars */
+        [data-testid="stMetricValue"],
+        [data-testid="stMetricValue"] > div {
+            font-size: 1.12rem !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+            overflow-wrap: break-word !important;
+        }
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricLabel"] > div,
+        [data-testid="stMetricLabel"] p {
+            font-size: 0.80rem !important;
+            line-height: 1.2 !important;
+        }
+        /* Tighter slider & widget labels */
+        .stSlider label p, .stNumberInput label p, .stCheckbox label p {
+            font-size: 0.85rem !important;
+        }
+        /* Compact body markdown & alert boxes */
+        .stMarkdown p, .stAlert p {
+            font-size: 0.88rem !important;
+            line-height: 1.4 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 def style_cro_axes(ax, title="", xlabel="Time (ms)", ylabel="Voltage (V)"):
     """Apply clean Dual-Trace CRO / laboratory oscilloscope styling."""
