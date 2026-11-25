@@ -20,41 +20,44 @@ st.markdown(
 # -------------------------------------------------------------------------
 def draw_square_gen_schematic(r_kohm, c_uf, r1_kohm, r2_kohm, vcc):
     with schemdraw.Drawing(show=False) as d:
-        d.config(unit=2.5, fontsize=9.2)
+        d.config(unit=2.6, fontsize=9.2)
 
-        # Op-Amp with non-inverting (+) at top, inverting (-) at bottom, or standard layout
-        # Using standard layout: in1 (-) top, in2 (+) bottom
+        # Op-Amp: in1 (-) at top, in2 (+) at bottom
         op = d.add(elm.Opamp(leads=True).label('$\mu$A741', loc='center', fontsize=8.5))
 
-        # Power supply pins
+        # Power supply pins (placed cleanly on top & bottom edges of triangle)
         d.add(elm.Line().up().at(op.vd).length(0.45).label(f'+{vcc:.0f}V (7)', loc='top', fontsize=8))
         d.add(elm.Line().down().at(op.vs).length(0.45).label(f'-{vcc:.0f}V (4)', loc='bottom', fontsize=8))
 
-        # Output node
-        d.add(elm.Line().right().at(op.out).length(0.8))
+        # Output node to the right of Pin 6
+        d.add(elm.Line().right().at(op.out).length(1.1))
         out_node = d.add(elm.Dot())
         d.add(elm.Line().right().length(0.9).label('$v_o$ (6)', loc='right'))
 
         # --- Upper Feedback Loop (Negative RC timing branch to Pin 2) ---
-        d.add(elm.Line().left().at(op.in1).length(0.6))
+        d.add(elm.Line().left().at(op.in1).length(0.8))
         inv_node = d.add(elm.Dot())
-        d.add(elm.Capacitor().down().length(1.3).label(f'$C$\n{c_uf:.3f} µF', loc='bottom'))
+
+        # Capacitor C from Pin 2 node down to Ground (well left of op-amp body)
+        d.add(elm.Capacitor().down().at(inv_node.center).length(1.5).label(f'$C$\n{c_uf:.3f} µF', loc='bottom'))
         d.add(elm.Ground())
 
-        d.add(elm.Line().up().at(inv_node.center).length(1.35))
+        # Timing resistor R from Pin 2 node over the top to Output node
+        d.add(elm.Line().up().at(inv_node.center).length(1.45))
         d.add(elm.Resistor().right().tox(out_node.center).label(f'$R$\n{r_kohm:.1f} kΩ', loc='top'))
         d.add(elm.Line().down().toy(out_node.center))
 
         # --- Lower Feedback Loop (Positive voltage divider R1, R2 to Pin 3) ---
-        d.add(elm.Line().left().at(op.in2).length(0.6))
-        d.add(elm.Line().down().length(1.25))
+        # Extend left past inv_node so vertical drop clears -VCC pin completely
+        d.add(elm.Line().left().at(op.in2).length(1.65))
+        d.add(elm.Line().down().length(1.85))
         div_node = d.add(elm.Dot())
 
-        # R1 to Ground
-        d.add(elm.Resistor().down().length(1.25).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='bottom'))
+        # R1 from divider node down to Ground
+        d.add(elm.Resistor().down().at(div_node.center).length(1.3).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='bottom'))
         d.add(elm.Ground())
 
-        # R2 from divider node to Output
+        # R2 horizontally below the -VCC label all the way to out_node x-coordinate
         d.add(elm.Resistor().right().at(div_node.center).tox(out_node.center).label(f'$R_2$\n{r2_kohm:.1f} kΩ', loc='bottom'))
         d.add(elm.Line().up().toy(out_node.center))
 
@@ -145,7 +148,6 @@ C = c_uf * 1e-6
 R1 = r1_kohm * 1e3
 R2 = r2_kohm * 1e3
 
-# Preliminary period calculation to set display window
 beta_tmp = R1 / (R1 + R2)
 T_tmp = 2.0 * R * C * np.log((1.0 + beta_tmp) / (1.0 - beta_tmp))
 t_disp, v_cap, v_out, fo, T, beta, v_ut, vsat = simulate_square_generator(
@@ -162,7 +164,6 @@ with disp_col:
     m3.metric("Thresholds ($\\pm V_{{UT}}$)", f"±{v_ut:.2f} V (β={beta:.3f})")
     m4.metric("Output Amplitude ($V_{{o(pp)}}$)", f"{2*vsat:.1f} V")
 
-    # Slew rate check for uA741 (SR = 0.5 V/us)
     rise_time_us = (2.0 * vsat) / 0.5
     if fo > 15000:
         st.warning(
@@ -251,7 +252,6 @@ with disp_col:
             ("Trial 3 ($f_3$)", rc_kohm * 1e3, "#d62728"),
         ]
 
-        # Common time axis covering 4 cycles of the lowest-frequency (longest-period) trial
         max_R = max(ra_kohm, rb_kohm, rc_kohm) * 1e3
         t_common_span = 4.0 * (2.0 * max_R * C * np.log((1.0 + beta) / (1.0 - beta)))
 
