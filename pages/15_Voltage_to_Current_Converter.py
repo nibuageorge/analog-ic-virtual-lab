@@ -11,8 +11,7 @@ render_sidebar_header()
 st.title("Experiment 15: Voltage-to-Current Converter with Grounded Load ($\\mu$A741)")
 st.markdown(
     "Design and construct a **Voltage-to-Current (V-to-I) Converter with Grounded Load** using **$\\mu$A741**, "
-    "verify the load-independent current relation $I_L = V_{in} / R$, plot $I_L$ vs. $V_{in}$ and $I_L$ vs. $R_L$, "
-    "and observe AC voltage-to-current conversion on the CRO (*Gayakwad, Section 6-9, Figure 6-19, Eq. 6-21b*)."
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -183,12 +182,12 @@ with disp_col:
     schem_col, plot_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 6-19*)**")
+        st.markdown("**Circuit Diagram (Gayakwad)**")
         fig_sch = draw_v_to_i_schematic(r_kohm, rl_kohm, vin_dc, il_actual_ma, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
         st.caption(
-            f"**Gayakwad Eq. (6-21b):** $I_L = V_{{in}} / R$; $V_o = 2 V_1$; "
+            f"**Gayakwad):** $I_L = V_{{in}} / R$; $V_o = 2 V_1$; "
             f"Valid for grounded load $R_L \\le R = {r_kohm:.1f}\\text{{ k}}\\Omega$."
         )
 
@@ -245,7 +244,7 @@ with disp_col:
     tab_cro, tab_obs, tab_theory = st.tabs([
         "AC Voltage-to-Current Waveforms (CRO)",
         "Observation Tables (IL vs. Vin & IL vs. RL)",
-        "Theory & Derivation (Gayakwad Sec. 6-9)"
+        "Theory & Derivation (Gayakwad)"
     ])
 
     with tab_cro:
@@ -326,7 +325,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Derivation (*R. A. Gayakwad, Section 6-9, Figure 6-19, p. 223*)
+            ### Theory & Derivation *R. A. Gayakwad)
 
             1. **Kirchhoff's Current Law (KCL) at Node $V_1$:**
                Assuming ideal op-amp input currents $I_B \\cong 0$, summing the currents entering non-inverting node $V_1$ gives:
