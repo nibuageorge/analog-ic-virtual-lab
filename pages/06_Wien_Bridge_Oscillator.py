@@ -35,7 +35,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().right().at((ox, oy)).length(0.75).label('$v_o$', loc='right', fontsize=9.5))
 
         # =================================================================
-        # UPPER BLOCK: Non-Inverting Amplifier (R1 to GND, Pot RF to Output)
+        # UPPER BRANCH: Non-Inverting Amplifier (R1 to GND, Pot RF to Output)
         # =================================================================
         inv_x, inv_y = op.in1
         top_y = inv_y + 1.15
@@ -54,7 +54,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().down().at((ox, sy)).toy(oy))
 
         # =================================================================
-        # LOWER BLOCK: Wien Bridge Feedback Circuit (Series RC & Parallel RC)
+        # LOWER BRANCH: Wien Bridge Feedback Circuit (Series RC & Parallel RC)
         # =================================================================
         noninv_x, noninv_y = op.in2
         fb_left_x = sx - 2.35
@@ -67,7 +67,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         jx, jy = junc_a.center
 
         # Horizontal branch to right: Series R + Series C connected back to Output v_o
-        d.add(elm.Line().right().at((jx, jy)).length(1.05))
+        d.add(elm.Line().right().at((jx, jy)).length(1.15))
         junc_b = d.add(elm.Dot())
         bx, by = junc_b.center
 
@@ -76,7 +76,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().up().toy(oy))
 
         # Parallel RC branch to Ground below junc_b
-        par_top_y = by - 0.55
+        par_top_y = by - 0.65
         par_bot_y = par_top_y - 1.25
         d.add(elm.Line().down().at((bx, by)).toy(par_top_y))
 
@@ -85,7 +85,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Resistor().down().toy(par_bot_y).label(f'$R$\n{r_kohm:.1f} kΩ', loc='left', fontsize=8))
         d.add(elm.Line().right().length(0.55))
 
-        # Right leg of parallel network: Capacitor C
+        # Right leg of parallel network: Capacitor C (label cleanly on the right)
         d.add(elm.Line().right().at((bx, par_top_y)).length(0.55))
         d.add(elm.Capacitor().down().toy(par_bot_y).label(f'$C$\n{c_uf:.3f} µF', loc='right', fontsize=8))
         d.add(elm.Line().left().length(0.55))
@@ -93,21 +93,6 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         # Common Ground below Parallel RC
         d.add(elm.Line().down().at((bx, par_bot_y)).length(0.35))
         d.add(elm.Ground())
-
-        # Dashed Functional Block Outlines ("Amplifier" and "Feedback circuit")
-        amp_box = elm.EncircleBox([sum_node, op], padx=0.55, pady=0.45).linestyle('--').color('#555555')
-        d.add(amp_box)
-        d.add(elm.Label().at((op.center[0], sy + 1.05)).label('Amplifier', fontsize=9))
-
-        fb_box = elm.EncircleBox([junc_a, out_node], padx=0.35, pady=0.35)
-        # Manual clean dashed box for Feedback circuit
-        box_x1, box_x2 = jx - 0.45, ox - 0.25
-        box_y1, box_y2 = par_bot_y - 0.65, by + 0.45
-        d.add(elm.Line().at((box_x1, box_y1)).to((box_x2, box_y1)).linestyle('--').color('#555555'))
-        d.add(elm.Line().at((box_x2, box_y1)).to((box_x2, box_y2)).linestyle('--').color('#555555'))
-        d.add(elm.Line().at((box_x2, box_y2)).to((box_x1, box_y2)).linestyle('--').color('#555555'))
-        d.add(elm.Line().at((box_x1, box_y2)).to((box_x1, box_y1)).linestyle('--').color('#555555'))
-        d.add(elm.Label().at(((box_x1 + box_x2) / 2.0, box_y1 - 0.35)).label('Feedback circuit', fontsize=9))
 
         fig = d.draw(show=False).fig
         return fig
