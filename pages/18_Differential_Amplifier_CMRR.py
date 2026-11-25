@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 20: Differential Amplifier & CMRR Measurement ($\\mu$A741)")
 st.markdown(
-    "Design and construct a **Differential Amplifier** using **$\\mu$A741** ($R_1 = R_2$ and $R_F = R_3$), "
-    "measure the output voltages in **Differential Mode ($v_{od}$)** and **Common Mode ($v_{ocm}$)** "
-    "for various input voltages at a fixed frequency, and calculate **CMRR** (*Gayakwad, Section 3-5-1, Figure 3-14*)."
+    "Design and construct a **Differential Amplifier** using **$\\mu$A741** "
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -158,7 +157,7 @@ with disp_col:
     schem_col, cro_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 3-14*)**")
+        st.markdown("**Circuit Diagram (Gayakwad)**")
         fig_sch = draw_diff_amp_schematic(r1_kohm, rf_kohm, rl_kohm, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -245,7 +244,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Working Formulas (*R. A. Gayakwad, Section 3-5-1, Figure 3-14*)
+            ### Working Formulas (R. A. Gayakwad)
 
             1. **Output Voltage of Differential Amplifier:**
                When $R_1 = R_2$ and $R_F = R_3$:
