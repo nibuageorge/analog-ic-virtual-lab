@@ -11,7 +11,7 @@ render_sidebar_header()
 st.title("Experiment 13: Multiple-Feedback Narrow Band-Pass Filter ($\mu$A741)")
 st.markdown(
     "Design and construct a **Narrow Band-Pass Filter** using **$\mu$A741**, "
-    " (*Ref. Gayakwad)."
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
