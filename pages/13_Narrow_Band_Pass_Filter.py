@@ -10,10 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 13: Multiple-Feedback Narrow Band-Pass Filter ($\mu$A741)")
 st.markdown(
-    "Design and construct a single op-amp multiple-feedback **Narrow Band-Pass Filter** using **$\mu$A741**, "
-    "plot its frequency response curve to determine the **bandwidth ($BW = f_H - f_L$)** and **center-frequency gain ($A_F$)**, "
-    "and repeat the experiment for a second center frequency ($f_C'$) at the **same gain ($A_F$)** "
-    "(*Gayakwad, Section 7.8, Figure 7-13*)."
+    "Design and construct a **Narrow Band-Pass Filter** using **$\mu$A741**, "
+    " (*Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -233,7 +231,7 @@ with disp_col:
     schem_col, resp_col = st.columns([1.12, 1.38], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 7-13a*)**")
+        st.markdown("**Circuit Diagram (*Gayakwad*)**")
         fig_sch = draw_narrow_bpf_schematic(r1_kohm, r2_kohm, r3_kohm, c1_uf, c2_uf, rl_kohm, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -243,7 +241,7 @@ with disp_col:
         )
 
     with resp_col:
-        st.markdown("**Frequency Response Curve (*Gayakwad Fig. 7-13b*)**")
+        st.markdown("**Frequency Response Curve (*Gayakwad*)**")
         fig_freq, (ax_lin, ax_db) = plt.subplots(2, 1, figsize=(7.6, 5.3), sharex=True)
 
         # Top Plot: Linear Voltage Gain Curve (matching Gayakwad Fig. 7-13b)
@@ -402,7 +400,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Equations (*R. A. Gayakwad, Section 7.8, Figure 7-13*)
+            ### Theory & Design Equations (*R. A. Gayakwad*)
 
             1. **Multiple-Feedback Narrow Band-Pass Filter ($Q < 10$):**
                A single op-amp multiple-feedback network ($R_1, R_2, R_3, C_1, C_2$) achieves higher selectivity ($Q$ up to $10$) than cascaded first-order high-pass and low-pass stages.
