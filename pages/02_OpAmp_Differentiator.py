@@ -19,13 +19,14 @@ st.markdown(
 # Helper: Draw Gayakwad Practical Differentiator Schematic
 # -------------------------------------------------------------------------
 def draw_differentiator_schematic(r1_ohm, c1_uf, rf_kohm, cf_nf, rom_kohm, vcc):
+    r1_label = f"{r1_ohm/1000:.2f} kΩ" if r1_ohm >= 1000 else f"{r1_ohm:.0f} Ω"
     with schemdraw.Drawing(show=False) as d:
         d.config(unit=2.4, fontsize=9.2)
         
         # Input source -> R1 -> C1 -> Summing Node
         d.add(elm.SourceSin().label('$v_{in}$', loc='left'))
         d.add(elm.Line().right().length(0.5))
-        d.add(elm.Resistor().right().label(f'$R_1$\n{r1_ohm:.0f} Ω', loc='top'))
+        d.add(elm.Resistor().right().label(f'$R_1$\n{r1_label}', loc='top'))
         d.add(elm.Capacitor().right().label(f'$C_1$\n{c1_uf:.3f} µF', loc='top'))
         sum_node = d.add(elm.Dot())
         
@@ -88,6 +89,14 @@ with ctrl_col:
     )
 
     st.subheader("2. Circuit Components (Gayakwad)")
+    r1_ohm = st.slider(
+        "Series Input Resistor $R_1$ (Ω)",
+        min_value=10,
+        max_value=10000,
+        value=150,
+        step=10,
+        help="Variable from 10 Ω to 10 kΩ (10,000 Ω). Limits high-frequency gain to -RF/R1 and sets break frequency fb1 = 1 / (2π R1 C1)."
+    )
     c1_uf = st.slider(
         "Input Capacitor $C_1$ (µF)",
         min_value=0.005,
@@ -103,29 +112,40 @@ with ctrl_col:
         value=1.5,
         step=0.1
     )
-    stability_ratio = st.selectbox(
-        "Stability Break Ratio ($f_b / f_a = R_F / R_1$)",
-        options=[5, 10, 20],
-        index=1,
-        help="Gayakwad sets R1·C1 = RF·CF with fb ≥ 10·fa (i.e., R1 = RF / 10) to prevent high-frequency noise and instability."
+    auto_cf = st.checkbox(
+        "Auto-match $C_F$ ($R_F C_F = R_1 C_1$)",
+        value=True,
+        help="Gayakwad recommends choosing CF so that RF·CF = R1·C1 (making fb1 = fb2)."
     )
+    if auto_cf:
+        cf_nf = (r1_ohm * c1_uf * 1e-6 / (rf_kohm * 1e3)) * 1e9
+        st.caption(f"Matched Feedback Capacitor: **$C_F = {cf_nf:.2f}\\text{{ nF}}$**")
+    else:
+        cf_nf = st.slider(
+            "Feedback Capacitor $C_F$ (nF)",
+            min_value=0.1,
+            max_value=100.0,
+            value=10.0,
+            step=0.1
+        )
     vcc = st.slider("Supply Voltage $\pm V_{CC}$ (V)", min_value=5.0, max_value=18.0, value=15.0, step=1.0)
 
 # -------------------------------------------------------------------------
 # Circuit Calculations (Gayakwad Section 6.14 Equations)
 # -------------------------------------------------------------------------
+R1 = float(r1_ohm)
 C1 = c1_uf * 1e-6
 RF = rf_kohm * 1e3
-R1 = RF / stability_ratio
-r1_ohm = R1
-CF = (R1 * C1) / RF  # Gayakwad design condition: R1*C1 = RF*CF
-cf_nf = CF * 1e9
+CF = cf_nf * 1e-9
 ROM = RF             # DC bias path sees only RF since C1 blocks DC
 rom_kohm = ROM / 1e3
+r1_disp_str = format_eng(R1, "Ω")
 
 # Critical break frequencies (Gayakwad Eqs. 6.45 & 6.46)
-fa = 1.0 / (2.0 * np.pi * RF * C1)   # Upper limit of differentiation: fa = 1 / (2π RF C1)
-fb = 1.0 / (2.0 * np.pi * R1 * C1)   # Gain-limiting break frequency:  fb = 1 / (2π R1 C1) = 1 / (2π RF CF)
+fa = 1.0 / (2.0 * np.pi * RF * C1)    # Upper limit of differentiation: fa = 1 / (2π RF C1)
+fb1 = 1.0 / (2.0 * np.pi * R1 * C1)   # Input break frequency:          fb1 = 1 / (2π R1 C1)
+fb2 = 1.0 / (2.0 * np.pi * RF * CF)   # Feedback break frequency:       fb2 = 1 / (2π RF CF)
+fb = min(fb1, fb2)
 max_hf_gain = -RF / R1
 
 # -------------------------------------------------------------------------
@@ -144,16 +164,13 @@ Vp = vin_pp / 2.0
 if wave_type == "Sine Wave":
     v_in_full = Vp * np.sin(2 * np.pi * freq * t_sim)
 else:
-    # Smooth finite-rise-time square wave (~0.5% of period) so RC spike width is resolved cleanly
     v_in_full = Vp * np.tanh(80.0 * np.sin(2 * np.pi * freq * t_sim))
 
-# Denominator: (R1*C1)*(RF*CF)*s^2 + (R1*C1 + RF*CF)*s + 1
 den = [R1 * C1 * RF * CF, R1 * C1 + RF * CF, 1.0]
 num = [-RF * C1, 0.0]
 sys_diff = signal.TransferFunction(num, den)
 _, v_out_full, _ = signal.lsim(sys_diff, U=v_in_full, T=t_sim)
 
-# Slice steady-state display window [t_settle, t_settle + t_total] shifted to 0
 mask = t_sim >= t_settle
 t_disp = t_sim[mask] - t_settle
 vin_disp = v_in_full[mask]
@@ -166,12 +183,18 @@ vout_disp, vsat = clip_opamp(vout_ideal, vcc)
 with disp_col:
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Differentiation Limit ($f_a$)", format_eng(fa, "Hz"))
-    m2.metric("Break Frequency ($f_b$)", format_eng(fb, "Hz"))
-    m3.metric("Stabilizing $R_1$ / $C_F$", f"{r1_ohm:.0f} Ω / {cf_nf:.2f} nF")
+    m2.metric("Input Break ($f_{b1}$)", format_eng(fb1, "Hz"))
+    m3.metric("Feedback Break ($f_{b2}$)", format_eng(fb2, "Hz"))
     m4.metric("Output $V_{o(pp)}$", f"{np.ptp(vout_disp):.2f} V")
 
     # Operating regime status banner
-    if freq <= fa:
+    if R1 >= RF:
+        st.warning(
+            f"**High Series Resistance ($R_1 = {r1_disp_str} \\ge R_F = {rf_kohm:.1f}\\text{{ k}}\\Omega$):** "
+            f"Because $R_1 \\ge R_F$, $f_{{b1}} \\le f_a$; the circuit attenuates the signal ($|A_v| \\le {abs(max_hf_gain):.2f}$) "
+            f"instead of acting as a true differentiator."
+        )
+    elif freq <= fa and freq <= fb:
         st.success(
             f"**True Differentiation Region ($f = {freq}\\text{{ Hz}} \\le f_a = {fa:.1f}\\text{{ Hz}}$):** "
             f"Gain rises at **$+20\\text{{ dB/decade}}$** ($v_o \\approx -R_F C_1 \\frac{{dv_{{in}}}}{{dt}}$). "
@@ -181,18 +204,18 @@ with disp_col:
         st.warning(
             f"**Transition / Gain-Limited Region ($f_a < f \\le f_b$):** "
             f"Input frequency ($f = {freq}\\text{{ Hz}}$) exceeds the upper differentiation limit $f_a = {fa:.1f}\\text{{ Hz}}$. "
-            f"Series resistor $R_1$ limits gain to $-R_F/R_1 = {max_hf_gain:.1f}$, rounding off sharp derivatives."
+            f"Series resistor $R_1 = {r1_disp_str}$ limits gain to $-R_F/R_1 = {max_hf_gain:.2f}$, broadening the derivative."
         )
     else:
         st.error(
             f"**High-Frequency Roll-Off Region ($f = {freq}\\text{{ Hz}} > f_b = {fb:.1f}\\text{{ Hz}}$):** "
-            f"Feedback capacitor $C_F$ bypasses $R_F$, causing gain to roll off at $-20\\text{{ dB/decade}}$ (acting as an integrator above $f_b$)."
+            f"Above $f_b$, the circuit rolls off at $-20\\text{{ dB/decade}}$ (acting as an integrator)."
         )
 
     if np.max(np.abs(vout_ideal)) > vsat:
         st.info(
             f"**Saturation Clipping Active:** Peak derivative ({np.max(np.abs(vout_ideal)):.2f} V) reaches "
-            f"$\\pm V_{{sat}} = \\pm {vsat:.1f}\\text{{ V}}$ (expected for sharp square-wave transitions)."
+            f"$\\pm V_{{sat}} = \\pm {vsat:.1f}\\text{{ V}}$ (increase $R_1$ or reduce $V_{{in(pp)}}$ to avoid clipping)."
         )
 
     # Top row in main display: Circuit Diagram (Left) + CRO Waveforms (Right)
@@ -204,8 +227,8 @@ with disp_col:
         st.pyplot(fig_sch)
         plt.close(fig_sch)
         st.caption(
-            f"**Design Constraint:** $R_1 C_1 = R_F C_F = {R1*C1*1e6:.2f}\\text{{ µs}}$ and "
-            f"$R_{{OM}} = R_F = {rom_kohm:.1f}\\text{{ k}}\\Omega$."
+            f"**Time Constants:** $R_1 C_1 = {format_eng(R1*C1, 's')}$, "
+            f"$R_F C_F = {format_eng(RF*CF, 's')}$, $R_{{OM}} = {rom_kohm:.1f}\\text{{ k}}\\Omega$."
         )
 
     with cro_col:
@@ -249,21 +272,22 @@ with disp_col:
     ])
 
     with tab_bode:
-        f_min = max(1.0, fa / 50.0)
-        f_max = max(1e5, fb * 50.0)
+        f_min = max(1.0, min(fa, fb1, fb2) / 50.0)
+        f_max = max(1e5, max(fa, fb1, fb2) * 50.0)
         f_sweep = np.logspace(np.log10(f_min), np.log10(f_max), 600)
         
-        # Gayakwad Eq. (6.44): |A_v| = (f / f_a) / sqrt((1 + (f/f_b)^2) * (1 + (f/f_b)^2)) = (f / f_a) / (1 + (f/f_b)^2)
-        gain_mag = (f_sweep / fa) / (1.0 + (f_sweep / fb) ** 2)
+        # Exact 2nd-order magnitude & phase for arbitrary R1, C1, RF, CF
+        gain_mag = (f_sweep / fa) / np.sqrt((1.0 + (f_sweep / fb1) ** 2) * (1.0 + (f_sweep / fb2) ** 2))
         gain_db = 20.0 * np.log10(gain_mag)
-        # Phase = 180 deg (inversion) + 90 deg (zero at origin) - 2 * arctan(f / f_b)
-        phase_deg = 270.0 - 2.0 * np.degrees(np.arctan(f_sweep / fb))
+        phase_deg = 270.0 - np.degrees(np.arctan(f_sweep / fb1)) - np.degrees(np.arctan(f_sweep / fb2))
 
         fig_bode, (ax_mag, ax_ph) = plt.subplots(2, 1, figsize=(9, 4.8), sharex=True)
 
         ax_mag.semilogx(f_sweep, gain_db, color="#2ca02c", linewidth=2.2, label="Practical Differentiator Gain $|A_v|$ (dB)")
         ax_mag.axvline(fa, color="#ff7f0e", linestyle="--", linewidth=1.4, label=f"$f_a = {fa:.1f}$ Hz (0 dB / Differentiation limit)")
-        ax_mag.axvline(fb, color="#9467bd", linestyle="-.", linewidth=1.4, label=f"$f_b = {fb:.1f}$ Hz (Stabilizing break freq)")
+        ax_mag.axvline(fb1, color="#9467bd", linestyle="-.", linewidth=1.4, label=f"$f_{{b1}} = {fb1:.1f}$ Hz ($1 / 2\\pi R_1 C_1$)")
+        if not np.isclose(fb1, fb2, rtol=1e-2):
+            ax_mag.axvline(fb2, color="#8c564b", linestyle=":", linewidth=1.4, label=f"$f_{{b2}} = {fb2:.1f}$ Hz ($1 / 2\\pi R_F C_F$)")
         ax_mag.axvline(freq, color="#d62728", linestyle="-", linewidth=1.6, label=f"Current Input $f = {freq}$ Hz")
         ax_mag.set_ylabel("Gain $|v_o / v_{in}|$ (dB)")
         ax_mag.set_title("Practical Differentiator Frequency Response (Gayakwad Fig. 6-26)", fontweight="bold")
@@ -292,26 +316,20 @@ with disp_col:
                $$v_o = -R_F C_1 \\frac{{dv_{{in}}}}{{dt}}$$
                For an ideal differentiator, the voltage gain magnitude $|A_v| = 2\\pi f R_F C_1$ increases linearly with frequency at **$+20\\text{{ dB/decade}}$**, which amplifies high-frequency noise and causes high-frequency instability.
 
-            2. **Practical Differentiator Stabilization:**
-               To eliminate instability and limit high-frequency noise, Gayakwad adds **$R_1$** in series with $C_1$ and **$C_F$** in parallel with $R_F$, chosen such that $R_1 C_1 = R_F C_F$. The closed-loop gain magnitude becomes:
-               $$\\left|\\frac{{v_o}}{{v_{{in}}}}\\right| = \\frac{{f / f_a}}{{1 + (f / f_b)^2}}$$
+            2. **Role of Series Resistor $R_1$ and Feedback Capacitor $C_F$:**
+               * Adding **$R_1$** ({r1_disp_str}) in series with $C_1$ limits the high-frequency voltage gain to $-R_F / R_1 = {max_hf_gain:.2f}$ and sets the break frequency $f_{{b1}} = \\frac{{1}}{{2\\pi R_1 C_1}} = {fb1:.2f}\\text{{ Hz}}$.
+               * Adding **$C_F$** ({cf_nf:.2f} nF) across $R_F$ introduces a second break frequency $f_{{b2}} = \\frac{{1}}{{2\\pi R_F C_F}} = {fb2:.2f}\\text{{ Hz}}$ to suppress oscillation above $f_{{b2}}$.
+               * **Closed-Loop Gain Magnitude:**
+                 $$\\left|\\frac{{v_o}}{{v_{{in}}}}\\right| = \\frac{{f / f_a}}{{\\sqrt{{(1 + (f / f_{{b1}})^2)(1 + (f / f_{{b2}})^2)}}}}$$
 
             3. **Design Frequencies:**
                * **Upper Frequency Limit of Differentiation ($f_a$):**
                  $$f_a = \\frac{{1}}{{2\\pi R_F C_1}} = {fa:.2f}\\text{{ Hz}}$$
-               * **Gain-Limiting Break Frequency ($f_b$):**
-                 $$f_b = \\frac{{1}}{{2\\pi R_1 C_1}} = \\frac{{1}}{{2\\pi R_F C_F}} = {fb:.2f}\\text{{ Hz}}$$
                * **Condition for True Differentiation:** Good differentiation occurs for all input frequencies:
                  $$f \\le f_a = {fa:.2f}\\text{{ Hz}} \\quad (\\text{{with }} f_b \\ge 10 f_a)$$
 
             4. **Offset Minimizing Resistor ($R_{{OM}}$):**
-               Because input capacitor $C_1$ blocks DC bias current through the input branch, the DC resistance seen at Pin 2 is simply $R_F$. Hence:
+               Because input capacitor $C_1$ blocks DC bias current through the input branch, the DC resistance seen at Pin 2 is $R_F$:
                $$R_{{OM}} = R_F = {rom_kohm:.1f}\\text{{ k}}\\Omega$$
-
-            5. **Expected Output Waveforms ($f \\le f_a$):**
-               * **Sine Wave Input** $v_{{in}}(t) = V_p \\sin(2\\pi f t)$ $\\longrightarrow$ **Negative Cosine Wave Output:**
-                 $$v_o(t) = -2\\pi f R_F C_1 V_p \\cos(2\\pi f t)$$
-                 *(Output amplitude increases linearly with frequency $f$ until saturation $\\pm V_{{sat}}$ or break frequency $f_a$ is reached)*
-               * **Square Wave Input** $\\longrightarrow$ **Alternating Positive & Negative Spikes** at the falling and rising edges of the square wave.
             """
         )
