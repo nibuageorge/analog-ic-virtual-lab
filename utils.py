@@ -3,6 +3,13 @@ import numpy as np
 
 
 def render_sidebar_header():
+    import os
+import streamlit as st
+
+def render_sidebar_header():
+    logo_path = "assets/logo.png" if os.path.exists("assets/logo.png") else "logo.png"
+    if os.path.exists(logo_path):
+        st.logo(logo_path, size="large")
     st.markdown(
         """
         <style>
