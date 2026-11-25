@@ -2,7 +2,51 @@ import streamlit as st
 import numpy as np
 
 
-
+def render_sidebar_header():
+    st.markdown(
+        """
+        <style>
+        /* Main window padding */
+        .block-container {
+            padding-top: 1.4rem !important;
+            padding-bottom: 1.5rem !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+        /* Compact proportional headings across all pages */
+        h1, [data-testid="stHeading"] h1 {
+            font-size: 1.45rem !important;
+            line-height: 1.25 !important;
+        }
+        h2, [data-testid="stHeading"] h2 {
+            font-size: 1.15rem !important;
+            line-height: 1.25 !important;
+        }
+        h3, [data-testid="stHeading"] h3 {
+            font-size: 1.00rem !important;
+            line-height: 1.25 !important;
+            margin-top: 0.4rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        /* Shrink st.metric numbers & prevent '...' truncation across all 4-column bars */
+        [data-testid="stMetric"] [data-testid="stMetricValue"],
+        [data-testid="stMetric"] [data-testid="stMetricValue"] > div,
+        [data-testid="stMetricValue"] * {
+            font-size: 1.05rem !important;
+            line-height: 1.25 !important;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: unset !important;
+        }
+        [data-testid="stMetric"] [data-testid="stMetricLabel"],
+        [data-testid="stMetric"] [data-testid="stMetricLabel"] * {
+            font-size: 0.78rem !important;
+            line-height: 1.2 !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.sidebar.markdown("---")
     st.sidebar.markdown(
