@@ -101,4 +101,4 @@ def format_eng(val, unit=""):
 
 def clip_opamp(v, vcc=15.0):
     vsat = max(vcc - 1.5, 0.5)
-    return np.clip(v, -vsat, vsat)
+    return np.clip(v, -vsat, vsat), vsat
