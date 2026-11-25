@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 9: First-Order Low-Pass Butterworth Filter ($\mu$A741)")
 st.markdown(
-    "Design and construct a first-order low-pass Butterworth active filter using **$\mu$A741**, "
-    "plot its frequency response curve, and determine the **passband gain ($A_F$)**, **high cutoff frequency ($f_H$)**, "
-    "and **stopband roll-off rate** (*Gayakwad, Section 7.2, Figure 7-2*)."
+    "Design and construct a first-order low-pass Butterworth active filter using **$\mu$A741**"
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
