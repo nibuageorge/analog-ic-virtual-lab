@@ -12,7 +12,7 @@ render_sidebar_header()
 st.title("Experiment 2: Practical Op-Amp Differentiator ($\mu$A741)")
 st.markdown(
     "Design and construct a practical differentiator using **$\mu$A741** for **sine wave** and **square wave** inputs, "
-    "and study the output waveform and frequency response across different frequencies (*Gayakwad, Section 6.14*)."
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
