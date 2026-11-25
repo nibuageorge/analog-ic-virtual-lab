@@ -11,7 +11,7 @@ render_sidebar_header()
 st.title("Experiment 8: RC Phase Shift Oscillator using Op-Amp ($\mu$A741)")
 st.markdown(
     "Design and construct an **RC Phase Shift Oscillator** using **$\mu$A741**"
-    "(Ref. Gayakwad)."
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
