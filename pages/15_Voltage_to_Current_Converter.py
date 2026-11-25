@@ -189,7 +189,7 @@ with disp_col:
         st.pyplot(fig_sch)
         plt.close(fig_sch)
         st.caption(
-            f"**Gayakwad Eq. (6-21b):** $I_L = V_{{in}} / R$; $V_o = 2 V_1$; "
+            f"**Gayakwad):** $I_L = V_{{in}} / R$; $V_o = 2 V_1$; "
             f"Valid for grounded load $R_L \\le R = {r_kohm:.1f}\\text{{ k}}\\Omega$."
         )
 
@@ -211,7 +211,7 @@ with disp_col:
         ax_vi.scatter([vin_dc], [il_actual_ma], color="#d62728", zorder=6, s=45, label=f"Operating Pt ({vin_dc:+.1f} V, {il_actual_ma:+.2f} mA)")
         style_cro_axes(
             ax_vi,
-            title=f"Transfer Characteristic: $I_L$ vs. $V_{{in}}$ (Slope = $1/R = {gm_ma_per_v:.3f}$ mA/V)",
+            title=f"Transfer Characteristic: $I_L$ vs. $V_{{in}}$ (Slope = {gm_ma_per_v:.3f} mA/V)",
             xlabel="Input Voltage $V_{in}$ (V)",
             ylabel="$I_L$ (mA)"
         )
@@ -231,9 +231,9 @@ with disp_col:
         ax_rl.scatter([rl_kohm], [il_actual_ma], color="#d62728", zorder=6, s=45)
         y_rl_max = max(abs((vin_dc / R) * 1e3) * 1.4, 0.2)
         ax_rl.set_ylim(-y_rl_max, y_rl_max)
-        style_cro_axes(
+style_cro_axes(
             ax_rl,
-            title=f"Load Regulation: $I_L$ vs. Grounded Load $R_L$ (Constant $I_L$ for $R_L \\le R$)",
+            title=r"Load Regulation: $I_L$ vs. Grounded Load $R_L$ (Constant $I_L$ for $R_L \leq R$)",
             xlabel="Grounded Load Resistance $R_L$ (kOhm)",
             ylabel="$I_L$ (mA)"
         )
