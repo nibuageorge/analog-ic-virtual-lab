@@ -11,8 +11,7 @@ render_sidebar_header()
 st.title("Experiment 14: Current-to-Voltage Converter using Op-Amp ($\\mu$A741)")
 st.markdown(
     "Design and construct a **Current-to-Voltage (I-to-V) Converter** using **$\\mu$A741**, "
-    "verify the linear relation $v_o = -i_{in} R_F$, plot the DC transfer characteristic ($v_o$ vs. $i_{in}$), "
-    "and observe AC current-to-voltage conversion on the CRO (*Gayakwad, Section 3-4-7, Figure 3-12, Eq. 3-23*)."
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -155,7 +154,7 @@ with disp_col:
     schem_col, trans_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 3-12*)**")
+        st.markdown("**Circuit Diagram (Gayakwad)**")
         fig_sch = draw_i_to_v_schematic(rf_kohm, rl_kohm, iin_dc_ma, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -254,9 +253,9 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Derivation (*R. A. Gayakwad, Section 3-4-7, Figure 3-12*)
+            ### Theory & Derivation (R. A. Gayakwad)
 
-            1. **Derivation from Inverting Amplifier (*Gayakwad Eqs. 3-14 & 3-23*):**
+            1. **Derivation from Inverting Amplifier (Gayakwad):**
                Starting with the ideal voltage-gain equation of an inverting amplifier:
                $$\\frac{{v_o}}{{v_{{in}}}} = -\\frac{{R_F}}{{R_1}} \\implies v_o = -\\left(\\frac{{v_{{in}}}}{{R_1}}\\right) R_F$$
                Since the non-inverting terminal is grounded ($v_1 = 0\\text{{ V}}$) and $v_1 = v_2$ (virtual ground), the input current is $\\frac{{v_{{in}}}}{{R_1}} = i_{{in}}$. Replacing the $v_{{in}}$ and $R_1$ combination by a current source $i_{{in}}$ (with $I_{{B1}} \\cong 0$, $I_{{B2}} \\cong 0$) gives:
