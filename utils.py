@@ -64,3 +64,41 @@ def render_sidebar_header():
         """,
         unsafe_allow_html=True,
     )
+
+
+def style_cro_axes(ax, title="", xlabel="", ylabel=""):
+    ax.axhline(0, color="#666666", linewidth=0.9, alpha=0.7)
+    ax.axvline(0, color="#666666", linewidth=0.9, alpha=0.7)
+    ax.grid(True, which="major", linestyle="--", linewidth=0.6, alpha=0.55)
+    ax.minorticks_on()
+    ax.grid(True, which="minor", linestyle=":", linewidth=0.4, alpha=0.35)
+    if title:
+        ax.set_title(title, fontsize=9.5, fontweight="bold")
+    if xlabel:
+        ax.set_xlabel(xlabel, fontsize=9, fontweight="bold")
+    if ylabel:
+        ax.set_ylabel(ylabel, fontsize=9, fontweight="bold")
+
+
+def format_eng(val, unit=""):
+    if val == 0:
+        return f"0.00 {unit}".strip()
+    abs_v = abs(val)
+    prefixes = [
+        (1e6, "M"),
+        (1e3, "k"),
+        (1.0, ""),
+        (1e-3, "m"),
+        (1e-6, "µ"),
+        (1e-9, "n"),
+        (1e-12, "p"),
+    ]
+    for scale, sym in prefixes:
+        if abs_v >= scale:
+            return f"{val / scale:.2f} {sym}{unit}".strip()
+    return f"{val:.2e} {unit}".strip()
+
+
+def clip_opamp(v, vcc=15.0):
+    vsat = max(vcc - 1.5, 0.5)
+    return np.clip(v, -vsat, vsat)
