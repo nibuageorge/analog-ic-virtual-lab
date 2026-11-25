@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 6: Wien Bridge Oscillator using Op-Amp ($\mu$A741)")
 st.markdown(
-    "Design and construct a Wien bridge sine-wave oscillator using **$\mu$A741**, adjust the feedback "
-    "potentiometer $R_F = 2 R_1$ for sustained sinusoidal oscillation, and repeat the experiment for two more frequencies "
-    "(*Gayakwad, Section 7.4*)."
+    "Design and construct a Wien bridge oscillator using **$\mu$A741** "
+    "(Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
