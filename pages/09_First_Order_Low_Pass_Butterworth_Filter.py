@@ -87,7 +87,7 @@ with ctrl_col:
     st.subheader("1. Low-Pass RC Network ($R, C$)")
     r_kohm = st.slider(
         "Filter Potentiometer $R$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=15.9,
         step=0.1,
