@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 12: Second-Order High-Pass Butterworth Filter ($\mu$A741)")
 st.markdown(
-    "Design and construct a second-order Sallen-Key high-pass Butterworth active filter using **$\mu$A741**, "
-    "plot its frequency response curve, and determine the **passband gain ($A_F = 1.586$)**, **low cutoff frequency ($f_L$)**, "
-    "and **stopband roll-off rate ($+40\\text{ dB/decade}$)** (*Gayakwad, Section 7.6, Figure 7-6*)."
+    "Design and construct a second-order high-pass Butterworth active filter using **$\mu$A741**, "
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -241,7 +240,7 @@ with disp_col:
     schem_col, resp_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 7-6a*)**")
+        st.markdown("**Circuit Diagram (*Gayakwad*)**")
         fig_sch = draw_second_order_hpf_schematic(c2_uf, c3_uf, r2_kohm, r3_kohm, r1_kohm, rf_kohm, rl_kohm, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -251,7 +250,7 @@ with disp_col:
         )
 
     with resp_col:
-        st.markdown("**Frequency Response Curve (*Gayakwad Fig. 7-6b*)**")
+        st.markdown("**Frequency Response Curve (*Gayakwad*)**")
         fig_freq, (ax_db, ax_lin) = plt.subplots(2, 1, figsize=(7.6, 5.3), sharex=True)
 
         # Top Plot: Logarithmic Gain Response (dB)
@@ -348,7 +347,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Procedure (*R. A. Gayakwad, Section 7.6*)
+            ### Theory & Design Procedure (*R. A. Gayakwad*)
 
             1. **Butterworth Magnitude Equation (*Gayakwad Eq. 7-11*):**
                Interchanging the frequency-determining resistors and capacitors of the second-order low-pass filter produces a second-order high-pass Butterworth filter with magnitude response:
