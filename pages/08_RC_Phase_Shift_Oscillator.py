@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 8: RC Phase Shift Oscillator using Op-Amp ($\mu$A741)")
 st.markdown(
-    "Design and construct a three-stage **RC Phase Shift Oscillator** using **$\mu$A741**, verify the "
-    "Barkhausen gain condition ($R_F = 29 R_1$) and Zener amplitude clamping, and repeat the experiment "
-    "for two more frequencies (*Gayakwad, Section 7.9, Figure 7-18*)."
+    "Design and construct an **RC Phase Shift Oscillator** using **$\mu$A741**"
+    "(Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
