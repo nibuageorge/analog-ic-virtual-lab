@@ -31,23 +31,32 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
         d.add(elm.Line().left().at(a1.in1).length(0.55))
         d.add(elm.Ground())
 
-        # Non-inverting input (in2, bottom) -> Node P (dropped well below -15V label)
+        # Non-inverting input (in2, bottom) -> Node P
         d.add(elm.Line().left().at(a1.in2).length(0.75))
         d.add(elm.Line().down().length(1.15))
         node_p = d.add(elm.Dot())
         px, py = node_p.center
 
-        # Output of A1 -> Node vo'
-        d.add(elm.Line().right().at(a1.out).length(0.6))
+        # Output of A1 -> First tap (BEFORE Zener diodes) for R3 feedback
+        d.add(elm.Line().right().at(a1.out).length(0.45))
+        r3_tap = d.add(elm.Dot())
+        tap_x, tap_y = r3_tap.center
+
+        # Rheostat / Potentiometer R3 connected between Node P and r3_tap (BEFORE diodes!)
+        d.add(elm.Potentiometer().right().at((px, py)).tox(tap_x).label(f'$R_3$\n{r3_kohm:.0f} kΩ', loc='bottom', fontsize=8))
+        d.add(elm.Line().up().at((tap_x, py)).toy(tap_y))
+
+        # Continue horizontally to the right -> Node vo' (Zener branch + v'_o tap)
+        d.add(elm.Line().right().at((tap_x, tap_y)).length(0.95))
         vo1_node = d.add(elm.Dot())
         vo1_x, vo1_y = vo1_node.center
 
-        # Tap going UP to v_o' square-wave indicator
+        # Tap going UP to v'_o square-wave indicator
         d.add(elm.Line().up().at((vo1_x, vo1_y)).length(0.85))
         d.add(elm.Line().right().length(0.35).label("$v'_o$", loc='top', fontsize=9))
 
-        # Back-to-Back Zener Clamp D1 & D2 in series to Ground (both drawn downward!)
-        d.add(elm.Line().down().at((vo1_x, vo1_y)).length(0.25))
+        # Back-to-Back Zener Clamp D1 & D2 to Ground (completely clear to the right of R3)
+        d.add(elm.Line().down().at((vo1_x, vo1_y)).length(0.3))
         if use_zener:
             d.add(elm.Zener().down().length(0.95).label('$D_1$', loc='right', fontsize=8.5))
             d.add(elm.Zener().down().reverse().length(0.95).label('$D_2$', loc='right', fontsize=8.5))
@@ -55,15 +64,9 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
             d.add(elm.Line().down().length(1.9).linestyle('--'))
         d.add(elm.Ground())
 
-        # Rheostat / Potentiometer R3 connected between Node P and v_o'
-        r3_right_x = vo1_x + 0.75
-        d.add(elm.Potentiometer().right().at((px, py)).tox(r3_right_x).label(f'$R_3$\n{r3_kohm:.0f} kΩ', loc='bottom', fontsize=8))
-        d.add(elm.Line().up().at((r3_right_x, py)).toy(vo1_y))
-        d.add(elm.Line().left().tox(vo1_x))
-
         # --- Integrator Input Resistor R1 ---
-        sum_x = r3_right_x + 2.35
-        d.add(elm.Resistor().right().at((r3_right_x, vo1_y)).tox(sum_x).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='top', fontsize=8.5))
+        sum_x = vo1_x + 2.55
+        d.add(elm.Resistor().right().at((vo1_x, vo1_y)).tox(sum_x).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='top', fontsize=8.5))
         sum_node = d.add(elm.Dot())
 
         # --- Stage 2: Integrator A2 ---
