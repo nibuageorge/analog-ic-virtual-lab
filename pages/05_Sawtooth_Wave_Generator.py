@@ -31,14 +31,14 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
         d.add(elm.Line().left().at(a1.in1).length(0.55))
         d.add(elm.Ground())
 
-        # Non-inverting input (in2, bottom) -> Node P
+        # Non-inverting input (in2, bottom) -> Node P (dropped well below -15V label)
         d.add(elm.Line().left().at(a1.in2).length(0.75))
-        d.add(elm.Line().down().length(0.85))
+        d.add(elm.Line().down().length(1.15))
         node_p = d.add(elm.Dot())
         px, py = node_p.center
 
         # Output of A1 -> Node vo'
-        d.add(elm.Line().right().at(a1.out).length(0.55))
+        d.add(elm.Line().right().at(a1.out).length(0.6))
         vo1_node = d.add(elm.Dot())
         vo1_x, vo1_y = vo1_node.center
 
@@ -46,24 +46,24 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
         d.add(elm.Line().up().at((vo1_x, vo1_y)).length(0.85))
         d.add(elm.Line().right().length(0.35).label("$v'_o$", loc='top', fontsize=9))
 
-        # Optional Back-to-Back Zener Clamp D1, D2 to Ground (dashed if disabled)
-        d.add(elm.Line().down().at((vo1_x, vo1_y)).length(0.35))
+        # Back-to-Back Zener Clamp D1 & D2 in series to Ground (both drawn downward!)
+        d.add(elm.Line().down().at((vo1_x, vo1_y)).length(0.25))
         if use_zener:
-            d.add(elm.Zener().down().length(0.85).label('$D_1$', loc='right', fontsize=8))
-            d.add(elm.Zener().up().reverse().length(0.85).label('$D_2$', loc='right', fontsize=8))
+            d.add(elm.Zener().down().length(0.95).label('$D_1$', loc='right', fontsize=8.5))
+            d.add(elm.Zener().down().reverse().length(0.95).label('$D_2$', loc='right', fontsize=8.5))
         else:
-            d.add(elm.Line().down().length(1.7).linestyle('--'))
+            d.add(elm.Line().down().length(1.9).linestyle('--'))
         d.add(elm.Ground())
 
-        # Potentiometer / Resistor R3 connected between Node P and v_o'
-        d.add(elm.Potentiometer().right().at((px, py)).tox(vo1_x + 0.55).label(f'$R_3$\n{r3_kohm:.0f} kΩ', loc='bottom', fontsize=8))
-        r3_end = d.here
-        d.add(elm.Line().up().at(r3_end).toy(vo1_y))
+        # Rheostat / Potentiometer R3 connected between Node P and v_o'
+        r3_right_x = vo1_x + 0.75
+        d.add(elm.Potentiometer().right().at((px, py)).tox(r3_right_x).label(f'$R_3$\n{r3_kohm:.0f} kΩ', loc='bottom', fontsize=8))
+        d.add(elm.Line().up().at((r3_right_x, py)).toy(vo1_y))
         d.add(elm.Line().left().tox(vo1_x))
 
         # --- Integrator Input Resistor R1 ---
-        sum_x = vo1_x + 2.85
-        d.add(elm.Resistor().right().at((vo1_x + 0.55, vo1_y)).tox(sum_x).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='top', fontsize=8.5))
+        sum_x = r3_right_x + 2.35
+        d.add(elm.Resistor().right().at((r3_right_x, vo1_y)).tox(sum_x).label(f'$R_1$\n{r1_kohm:.1f} kΩ', loc='top', fontsize=8.5))
         sum_node = d.add(elm.Dot())
 
         # --- Stage 2: Integrator A2 ---
@@ -88,7 +88,6 @@ def draw_sawtooth_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, r4_kohm, use_z
         wiper_x = d.here[0]
         d.add(elm.Line().down().toy(pot_y + 0.25))
 
-        # Horizontal Potentiometer R4 between +VCC and -VEE
         d.add(elm.Potentiometer().right().at((wiper_x - 0.85, pot_y)).length(1.7).label(f'$R_4$ ({r4_kohm:.0f} kΩ)\nDuty cycle adjust', loc='bottom', fontsize=8))
         d.add(elm.Line().left().at((wiper_x - 0.85, pot_y)).length(0.35).label(f'+{vcc:.0f}V', loc='left', fontsize=7.5))
         d.add(elm.Line().right().at((wiper_x + 0.85, pot_y)).length(0.35).label(f'-{vcc:.0f}V', loc='right', fontsize=7.5))
