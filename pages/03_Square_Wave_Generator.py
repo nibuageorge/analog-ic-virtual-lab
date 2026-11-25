@@ -11,8 +11,7 @@ render_sidebar_header()
 st.title("Experiment 3: Square Wave Generator using Op-Amp ($\mu$A741)")
 st.markdown(
     "Design and construct a free-running square wave generator (astable multivibrator) using **$\mu$A741** "
-    "for a target frequency $f_o$, plot the capacitor and output waveforms, and repeat the experiment for "
-    "two additional frequencies (*Gayakwad, Section 7.6*)."
+    "(Ref.Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
