@@ -99,7 +99,7 @@ with ctrl_col:
         value=0.010,
         step=0.001,
         format="%.3f",
-        help="Gayakwad Fig. 7-5(a) default: 0.01 µF."
+        help="Gayakwad default: 0.01 µF."
     )
 
     st.subheader("2. Passband Gain Network ($R_1, R_F, R_L$)")
@@ -183,7 +183,7 @@ with disp_col:
     schem_col, resp_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 7-5a*)**")
+        st.markdown("**Circuit Diagram (*Gayakwad*)**")
         fig_sch = draw_first_order_hpf_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, rl_kohm, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -287,9 +287,9 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Procedure (*R. A. Gayakwad, Section 7.5, Figure 7-5*)
+            ### Theory & Design Procedure (*R. A. Gayakwad*)
 
-            1. **Transfer Function (*Gayakwad Eq. 7-7*):**
+            1. **Transfer Function **
                Interchanging the frequency-determining $R$ and $C$ components of a first-order low-pass filter yields a high-pass filter whose voltage across $R$ is $v_1 = \\frac{{j 2\\pi f R C}}{{1 + j 2\\pi f R C}} v_{{in}}$:
                $$\\frac{{v_o}}{{v_{{in}}}} = A_F \\left[\\frac{{j(f / f_L)}}{{1 + j(f / f_L)}}\\right] \\implies \\left|\\frac{{v_o}}{{v_{{in}}}}\\right| = \\frac{{A_F (f / f_L)}}{{\\sqrt{{1 + (f / f_L)^2}}}}$$
 
