@@ -35,7 +35,7 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().right().at((ox, oy)).length(0.75).label('$v_o$', loc='right', fontsize=9.5))
 
         # =================================================================
-        # UPPER BRANCH: Non-Inverting Amplifier (R1 to GND, Pot RF to Output)
+        # UPPER BLOCK: Non-Inverting Amplifier (R1 to GND, Pot RF to Output)
         # =================================================================
         inv_x, inv_y = op.in1
         top_y = inv_y + 1.15
@@ -54,11 +54,11 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         d.add(elm.Line().down().at((ox, sy)).toy(oy))
 
         # =================================================================
-        # LOWER BRANCH: Wien Bridge Feedback Circuit (Series RC & Parallel RC)
+        # LOWER BLOCK: Wien Bridge Feedback Circuit (Series RC & Parallel RC)
         # =================================================================
         noninv_x, noninv_y = op.in2
         fb_left_x = sx - 2.35
-        fb_bus_y = noninv_y - 1.55
+        fb_bus_y = noninv_y - 1.65
 
         # Connection from Op-Amp Non-Inverting (+) terminal to Feedback Junction
         d.add(elm.Line().left().at((noninv_x, noninv_y)).tox(fb_left_x))
@@ -66,29 +66,29 @@ def draw_wien_bridge_schematic(r_kohm, c_uf, r1_kohm, rf_kohm, vcc):
         junc_a = d.add(elm.Dot())
         jx, jy = junc_a.center
 
-        # Horizontal branch to right: Series R + Series C connected back to Output v_o
+        # Horizontal branch to right: Series R + Series C (labels cleanly on TOP)
         d.add(elm.Line().right().at((jx, jy)).length(1.15))
         junc_b = d.add(elm.Dot())
         bx, by = junc_b.center
 
-        d.add(elm.Resistor().right().at((bx, by)).length(1.9).label(f'$R$\n{r_kohm:.1f} kΩ', loc='bottom', fontsize=8.5))
-        d.add(elm.Capacitor().right().tox(ox).label(f'$C$\n{c_uf:.3f} µF', loc='bottom', fontsize=8.5))
+        d.add(elm.Resistor().right().at((bx, by)).length(1.9).label(f'$R$\n{r_kohm:.1f} kΩ', loc='top', fontsize=8.5))
+        d.add(elm.Capacitor().right().tox(ox).label(f'$C$\n{c_uf:.3f} µF', loc='top', fontsize=8.5))
         d.add(elm.Line().up().toy(oy))
 
-        # Parallel RC branch to Ground below junc_b
-        par_top_y = by - 0.65
-        par_bot_y = par_top_y - 1.25
+        # Parallel RC branch to Ground well below junc_b
+        par_top_y = by - 0.85
+        par_bot_y = par_top_y - 1.35
         d.add(elm.Line().down().at((bx, by)).toy(par_top_y))
 
         # Left leg of parallel network: Resistor R
-        d.add(elm.Line().left().at((bx, par_top_y)).length(0.55))
+        d.add(elm.Line().left().at((bx, par_top_y)).length(0.65))
         d.add(elm.Resistor().down().toy(par_bot_y).label(f'$R$\n{r_kohm:.1f} kΩ', loc='left', fontsize=8))
-        d.add(elm.Line().right().length(0.55))
+        d.add(elm.Line().right().length(0.65))
 
-        # Right leg of parallel network: Capacitor C (label cleanly on the right)
-        d.add(elm.Line().right().at((bx, par_top_y)).length(0.55))
+        # Right leg of parallel network: Capacitor C
+        d.add(elm.Line().right().at((bx, par_top_y)).length(0.65))
         d.add(elm.Capacitor().down().toy(par_bot_y).label(f'$C$\n{c_uf:.3f} µF', loc='right', fontsize=8))
-        d.add(elm.Line().left().length(0.55))
+        d.add(elm.Line().left().length(0.65))
 
         # Common Ground below Parallel RC
         d.add(elm.Line().down().at((bx, par_bot_y)).length(0.35))
