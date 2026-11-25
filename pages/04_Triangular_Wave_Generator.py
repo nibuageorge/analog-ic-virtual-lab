@@ -11,7 +11,8 @@ render_sidebar_header()
 st.title("Experiment 4: Triangular Wave Generator using Op-Amp ($\mu$A741)")
 st.markdown(
     "Design and construct a two-stage triangular wave generator using **$\mu$A741** comparator ($A_1$) and "
-    "integrator ($A_2$), and study the square wave ($v_{o1}$) and triangular wave ($v_o$) outputs (Ref. Gayakwad)."
+    "integrator ($A_2$), study the square wave ($v_{o1}$) and triangular wave ($v_o$) outputs, and repeat "
+    "for three frequencies (*Gayakwad, Section 7.7*)."
 )
 
 # -------------------------------------------------------------------------
@@ -22,7 +23,6 @@ def draw_triangular_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, rom_kohm, vc
         d.config(unit=2.5, fontsize=8.8)
 
         # --- Stage 1: Non-Inverting Comparator (A1) ---
-        # Inverting input (in1, top) grounded; Non-inverting input (in2, bottom) receives summing node P
         a1 = d.add(elm.Opamp(leads=True).label('$A_1$\n($\mu$A741)', loc='center', fontsize=8))
         d.add(elm.Line().up().at(a1.vd).length(0.4).label(f'+{vcc:.0f}V', loc='top', fontsize=7.5))
         d.add(elm.Line().down().at(a1.vs).length(0.4).label(f'-{vcc:.0f}V', loc='bottom', fontsize=7.5))
@@ -79,6 +79,39 @@ def draw_triangular_gen_schematic(r1_kohm, c1_uf, r2_kohm, r3_kohm, rom_kohm, vc
         return fig
 
 # -------------------------------------------------------------------------
+# Helper: Generate Exact Analytical Waveforms for Triangular Wave Generator
+# -------------------------------------------------------------------------
+def simulate_triangular_generator(R1, C1, R2, R3, vcc, t_span, num_pts=3500):
+    vsat = max(vcc - 1.5, 0.5)
+    v_peak_ideal = (R2 / R3) * vsat
+    vo_pp_ideal = 2.0 * v_peak_ideal
+
+    T = (4.0 * R1 * C1 * R2) / R3
+    fo = 1.0 / T
+
+    t = np.linspace(0.0, t_span, num_pts)
+    t_mod = np.mod(t, T)
+    half_T = T / 2.0
+
+    v_o1 = np.empty_like(t)
+    v_o_ideal = np.empty_like(t)
+
+    # First half-cycle [0, T/2): v_o1 = -Vsat -> Integrator ramps UP from -Vp to +Vp
+    mask1 = t_mod < half_T
+    t1 = t_mod[mask1]
+    v_o1[mask1] = -vsat
+    v_o_ideal[mask1] = -v_peak_ideal + (vsat / (R1 * C1)) * t1
+
+    # Second half-cycle [T/2, T): v_o1 = +Vsat -> Integrator ramps DOWN from +Vp to -Vp
+    mask2 = ~mask1
+    t2 = t_mod[mask2] - half_T
+    v_o1[mask2] = vsat
+    v_o_ideal[mask2] = v_peak_ideal - (vsat / (R1 * C1)) * t2
+
+    v_o_disp = np.clip(v_o_ideal, -vsat, vsat)
+    return t, v_o1, v_o_disp, fo, T, v_peak_ideal, vo_pp_ideal, vsat
+
+# -------------------------------------------------------------------------
 # Main Layout: Left Panel (Controls) | Right Panel (Circuit + CRO)
 # -------------------------------------------------------------------------
 ctrl_col, disp_col = st.columns([1.0, 2.3], gap="large")
@@ -125,48 +158,18 @@ with ctrl_col:
     num_cycles = st.slider("Cycles Displayed on CRO", min_value=2, max_value=8, value=4, step=1)
 
 # -------------------------------------------------------------------------
-# Circuit Calculations (Gayakwad Section 7.7 Equations 7.18 - 7.21)
+# Primary Simulation Run
 # -------------------------------------------------------------------------
 R1 = r1_kohm * 1e3
 C1 = c1_uf * 1e-6
 R2 = r2_kohm * 1e3
 R3 = r3_kohm * 1e3
-rom_kohm = r1_kohm  # Offset minimizing resistor R_OM = R1
+rom_kohm = r1_kohm
 
-vsat = max(vcc - 1.5, 0.5)
-
-# Gayakwad Eq. (7.19): V_o(pp) = 2 * (R2 / R3) * V_sat
-v_peak_ideal = (R2 / R3) * vsat
-vo_pp_ideal = 2.0 * v_peak_ideal
-
-# Gayakwad Eqs. (7.20) & (7.21): T = 4 * R1 * C1 * R2 / R3,  fo = R3 / (4 * R1 * C1 * R2)
-T = (4.0 * R1 * C1 * R2) / R3
-fo = 1.0 / T
-
-# -------------------------------------------------------------------------
-# Exact Time-Domain Waveform Generation
-# -------------------------------------------------------------------------
-t_disp = np.linspace(0.0, num_cycles * T, 3500)
-t_mod = np.mod(t_disp, T)
-half_T = T / 2.0
-
-v_o1 = np.empty_like(t_disp)       # Square wave output of Comparator A1
-v_o_ideal = np.empty_like(t_disp)  # Triangular wave output of Integrator A2
-
-# First half-cycle [0, T/2): v_o1 = -Vsat -> Integrator ramps linearly UP from -Vp to +Vp
-mask1 = t_mod < half_T
-t1 = t_mod[mask1]
-v_o1[mask1] = -vsat
-v_o_ideal[mask1] = -v_peak_ideal + (vsat / (R1 * C1)) * t1
-
-# Second half-cycle [T/2, T): v_o1 = +Vsat -> Integrator ramps linearly DOWN from +Vp to -Vp
-mask2 = ~mask1
-t2 = t_mod[mask2] - half_T
-v_o1[mask2] = vsat
-v_o_ideal[mask2] = v_peak_ideal - (vsat / (R1 * C1)) * t2
-
-# Apply physical op-amp saturation clamp to v_o in case user sets R2 >= R3
-v_o_disp = np.clip(v_o_ideal, -vsat, vsat)
+T_tmp = (4.0 * R1 * C1 * R2) / R3
+t_disp, v_o1, v_o_disp, fo, T, v_peak_ideal, vo_pp_ideal, vsat = simulate_triangular_generator(
+    R1, C1, R2, R3, vcc, t_span=num_cycles * T_tmp
+)
 
 # -------------------------------------------------------------------------
 # Right Display Panel: Circuit Diagram + Live CRO Waveforms
@@ -238,8 +241,72 @@ with disp_col:
         st.pyplot(fig_cro)
         plt.close(fig_cro)
 
-    # Secondary tab below for Textbook Theory & Design Equations
-    with st.expander("📖 Theory & Design Equations (R. A. Gayakwad, Section 7.7)", expanded=False):
+    # ---------------------------------------------------------------------
+    # Secondary Tabs: Multi-Frequency Comparison (3 Frequencies) + Theory
+    # ---------------------------------------------------------------------
+    tab_multi, tab_theory = st.tabs([
+        "🔁 Repeat for Three Frequencies ($f_1, f_2, f_3$)",
+        "📖 Theory & Design Procedure (Gayakwad)"
+    ])
+
+    with tab_multi:
+        st.markdown(
+            "Select three integrator resistor values ($R_{1a}, R_{1b}, R_{1c}$) with fixed $C_1 = "
+            f"{c1_uf:.3f}\\text{{ µF}}$, $R_2 = {r2_kohm:.1f}\\text{{ k}}\\Omega$, and $R_3 = {r3_kohm:.1f}\\text{{ k}}\\Omega$ "
+            "to compare the triangular wave outputs across **three different frequencies** simultaneously:"
+        )
+
+        fcol1, fcol2, fcol3 = st.columns(3)
+        with fcol1:
+            r1a_kohm = st.number_input("Trial 1: Resistor $R_{1a}$ (kΩ)", min_value=1.0, max_value=100.0, value=5.0, step=1.0)
+        with fcol2:
+            r1b_kohm = st.number_input("Trial 2: Resistor $R_{1b}$ (kΩ)", min_value=1.0, max_value=100.0, value=10.0, step=1.0)
+        with fcol3:
+            r1c_kohm = st.number_input("Trial 3: Resistor $R_{1c}$ (kΩ)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
+
+        trials = [
+            ("Trial 1 ($f_1$)", r1a_kohm * 1e3, "#1f77b4"),
+            ("Trial 2 ($f_2$)", r1b_kohm * 1e3, "#2ca02c"),
+            ("Trial 3 ($f_3$)", r1c_kohm * 1e3, "#d62728"),
+        ]
+
+        # Common time axis covering 4 cycles of the lowest-frequency (largest R1) trial
+        max_R1 = max(r1a_kohm, r1b_kohm, r1c_kohm) * 1e3
+        t_common_span = 4.0 * ((4.0 * max_R1 * C1 * R2) / R3)
+
+        fig_cmp, axes_cmp = plt.subplots(3, 1, figsize=(9, 5.8), sharex=True)
+        table_rows = []
+
+        for idx, (label, r1_val, color) in enumerate(trials):
+            t_i, _, vout_i, fo_i, T_i, _, _, vsat_i = simulate_triangular_generator(
+                r1_val, C1, R2, R3, vcc, t_span=t_common_span, num_pts=3500
+            )
+            ax = axes_cmp[idx]
+            ax.plot(t_i * 1000.0, vout_i, color=color, linewidth=2.0)
+            ax.set_ylim(-vsat_i * 1.2, vsat_i * 1.2)
+            style_cro_axes(
+                ax,
+                title=f"{label}: $R_1 = {r1_val/1e3:.1f}$ kΩ, $C_1 = {c1_uf:.3f}$ µF  →  $f_o = {fo_i:.1f}$ Hz ($T = {T_i*1000:.2f}$ ms)",
+                xlabel="Time (ms)" if idx == 2 else "",
+                ylabel="$v_o$ (V)"
+            )
+            table_rows.append({
+                "Trial": label,
+                "Integrator R1 (kΩ)": f"{r1_val/1e3:.1f}",
+                "Capacitor C1 (µF)": f"{c1_uf:.3f}",
+                "Time Period T (ms)": f"{T_i*1000:.3f}",
+                "Frequency fo (Hz)": f"{fo_i:.2f}",
+                "Triangular Vo(pp) (V)": f"{np.ptp(vout_i):.2f}"
+            })
+
+        plt.tight_layout()
+        st.pyplot(fig_cmp)
+        plt.close(fig_cmp)
+
+        st.markdown("**Observation Table (Three Frequencies)**")
+        st.table(table_rows)
+
+    with tab_theory:
         st.markdown(
             f"""
             ### Theory & Design Procedure (*R. A. Gayakwad, Section 7.7*)
