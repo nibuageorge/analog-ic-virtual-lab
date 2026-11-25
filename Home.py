@@ -28,19 +28,21 @@ OPAMP_EXPERIMENTS = [
     ("pages/06_Wien_Bridge_Oscillator.py", "6. Wien Bridge Oscillator with Amplitude Stabilization", "〰️"),
     ("pages/07_Schmitt_Trigger_Hysteresis.py", "7. Schmitt Trigger & Hysteresis Curve (µA741)", "🔁"),
     ("pages/08_RC_Phase_Shift_Oscillator.py", "8. RC Phase Shift Oscillator using Op-Amp (µA741)", "🌀"),
-    ("pages/09_Low_Pass_Butterworth_Filter.py", "9. First & Second Order Low-Pass Butterworth Filter", "🔽"),
-    ("pages/10_High_Pass_Butterworth_Filter.py", "10. First & Second Order High-Pass Butterworth Filter", "🔼"),
-    ("pages/11_Narrow_Band_Pass_Filter.py", "11. First Order Narrow Band-Pass Butterworth Filter", "📶"),
+    ("pages/09_First_Order_Low_Pass_Butterworth_Filter.py", "9. First Order Low-Pass Butterworth Filter", "🔽"),
+    ("pages/10_Second_Order_Low_Pass_Butterworth_Filter.py", "10. Second Order Low-Pass Butterworth Filter", "🔽"),
+    ("pages/11_First_Order_High_Pass_Butterworth_Filter.py", "11. First Order High-Pass Butterworth Filter", "🔼"),
+    ("pages/12_Second_Order_High_Pass_Butterworth_Filter.py", "12. Second Order High-Pass Butterworth Filter", "🔼"),
+    ("pages/13_Narrow_Band_Pass_Filter.py", "13. First Order Narrow Band-Pass Butterworth Filter", "📶"),
     ("pages/14_Current_to_Voltage_Converter.py", "14. Current-to-Voltage Converter (µA741)", "🔌"),
     ("pages/15_Voltage_to_Current_Converter.py", "15. Voltage-to-Current Converter (µA741)", "🔋"),
     ("pages/16_OpAmp_Asymmetric_Astable.py", "16. Astable Multivibrator with Duty Cycle ≠ 50% (µA741)", "⏱️"),
 ]
 
 TIMER_555_EXPERIMENTS = [
-    ("pages/12_555_Astable_Multivibrator.py", "12. Astable Multivibrator using IC 555 Timer", "⏲️"),
-    ("pages/13_555_Monostable_Multivibrator.py", "13. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
-    ("pages/17_555_Voltage_Controlled_Oscillator.py", "17. Voltage Controlled Oscillator (VCO) using IC 555", "🎛️"),
-    ("pages/18_555_Schmitt_Trigger.py", "18. Schmitt Trigger Circuit using IC 555 Timer", "🔀"),
+    ("pages/17_555_Astable_Multivibrator.py", "17. Astable Multivibrator using IC 555 Timer", "⏲️"),
+    ("pages/18_555_Monostable_Multivibrator.py", "18. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
+    ("pages/19_555_Voltage_Controlled_Oscillator.py", "19. Voltage Controlled Oscillator (VCO) using IC 555", "🎛️"),
+    ("pages/20_555_Schmitt_Trigger.py", "20. Schmitt Trigger Circuit using IC 555 Timer", "🔀"),
 ]
 
 def render_experiment_list(exp_list):
