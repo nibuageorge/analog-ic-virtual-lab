@@ -43,7 +43,7 @@ OPAMP_EXPERIMENTS = [
 TIMER_555_EXPERIMENTS = [
     ("pages/19_555_Astable_Multivibrator.py", "19. Astable Multivibrator using IC 555 Timer", "⏲️"),
     ("pages/20_555_Monostable_Multivibrator.py", "20. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
-
+]
 OPTOELECTRONICS_EXPERIMENTS = [
     ("pages/21_Solar_Cell_IV_Characteristics.py", "21. Solar Cell I-V & P-V Characteristics", "☀️"),
 ]
