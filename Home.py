@@ -3,22 +3,22 @@ import streamlit as st
 from utils import render_sidebar_header
 
 st.set_page_config(
-    page_title="Linear Integrated Circuits Virtual Lab",
+    page_title="Linear Integrated Circuits & Optoelectronics Virtual Lab",
     page_icon="⚡",
     layout="wide"
 )
 render_sidebar_header()
 
-st.title("Linear Integrated Circuits Virtual Laboratory")
+st.title("Linear Integrated Circuits & Optoelectronics Virtual Laboratory")
 st.markdown(
     """
-    Interactive simulation suite for **$\mu$A741 Operational Amplifier** and **IC 555 Timer** experiments, 
-    designed according to *Op-Amps and Linear Integrated Circuits* by **Ramakant A. Gayakwad**.
+    Interactive simulation suite for **$\\mu$A741 Operational Amplifier**, **IC 555 Timer**, and **Optoelectronics** experiments, 
+    designed according to *Op-Amps and Linear Integrated Circuits* by **Ramakant A. Gayakwad** and undergraduate physics laboratory curricula.
     """
 )
 st.divider()
 
-# Complete master catalog of all 18 experiments
+# Part A: Op-Amp (uA741) Applications
 OPAMP_EXPERIMENTS = [
     ("pages/01_OpAmp_Integrator.py", "1. Practical Integrator using Op-Amp (µA741)", "📈"),
     ("pages/02_OpAmp_Differentiator.py", "2. Practical Differentiator using Op-Amp (µA741)", "📉"),
@@ -63,12 +63,16 @@ st.subheader("Experiment Index")
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
-    st.markdown("#### Part A: Op-Amp ($\mu$A741) Applications")
+    st.markdown("#### Part A: Op-Amp ($\\mu$A741) Applications")
     render_experiment_list(OPAMP_EXPERIMENTS)
 
 with col2:
     st.markdown("#### Part B: IC 555 Timer Applications")
     render_experiment_list(TIMER_555_EXPERIMENTS)
+
+    st.markdown("---")
+    st.markdown("#### Part C: Optoelectronics Experiments")
+    render_experiment_list(OPTOELECTRONICS_EXPERIMENTS)
 
 st.divider()
 st.caption(
