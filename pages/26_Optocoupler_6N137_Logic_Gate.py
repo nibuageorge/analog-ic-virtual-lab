@@ -21,136 +21,149 @@ st.markdown(
 # -------------------------------------------------------------------------
 def draw_6n137_schematic(config_mode, vin_high, enable_state, rin_ohm, rpull_ohm, rled_ohm, led_on):
     with schemdraw.Drawing(show=False, bgcolor="white") as d:
-        d.config(unit=2.45, fontsize=8.2, color="#0f172a", lw=1.6)
+        d.config(unit=2.5, fontsize=8.2, color="#0f172a", lw=1.6)
 
-        # Central 8-pin DIP representation for 6N137
-        # Left pins: Pin 2 (Anode), Pin 3 (Cathode)
-        # Right pins: Pin 8 (VCC), Pin 7 (VE Enable), Pin 6 (VO Output), Pin 5 (GND)
+        # Standard 8-Pin DIP 6N137 Package Layout:
+        # Left side (top to bottom): Pin 1 (NC), Pin 2 (Anode +), Pin 3 (Cathode -), Pin 4 (NC)
+        # Right side (top to bottom): Pin 8 (VCC), Pin 7 (VE Enable), Pin 6 (VO Output), Pin 5 (GND)
         ic = d.add(
             elm.Ic(
                 pins=[
-                    elm.IcPin(name="2 (A)", side="left", pin="2"),
+                    elm.IcPin(name="4 (NC)", side="left", pin="4"),
                     elm.IcPin(name="3 (K)", side="left", pin="3"),
+                    elm.IcPin(name="2 (A)", side="left", pin="2"),
+                    elm.IcPin(name="1 (NC)", side="left", pin="1"),
                     elm.IcPin(name="5 (GND)", side="right", pin="5"),
                     elm.IcPin(name="6 (VO)", side="right", pin="6"),
                     elm.IcPin(name="7 (VE)", side="right", pin="7"),
                     elm.IcPin(name="8 (VCC)", side="right", pin="8"),
                 ],
-                w=3.2,
-                h=4.2,
-                pinspacing=0.95,
-                label="6N137\nHigh-Speed\nOptocoupler",
-                fontsize=8.2,
+                w=3.4,
+                h=5.2,
+                pinspacing=1.05,
+                label="6N137\nOptocoupler",
+                fontsize=8.5,
             ).at((0, 0))
         )
 
-        p2 = ic.inL1  # Pin 2 (Anode)
-        p3 = ic.inL2  # Pin 3 (Cathode)
-        p5 = ic.inR1  # Pin 5 (GND)
-        p6 = ic.inR2  # Pin 6 (Output VO)
-        p7 = ic.inR3  # Pin 7 (Enable VE)
-        p8 = ic.inR4  # Pin 8 (VCC +5V)
+        # Left pins (bottom-to-top order in schemdraw inL1..inL4)
+        p4 = ic.inL1  # Pin 4: NC
+        p3 = ic.inL2  # Pin 3: Cathode (K)
+        p2 = ic.inL3  # Pin 2: Anode (A)
+        p1 = ic.inL4  # Pin 1: NC
 
-        # ----------------- INPUT SIDE (ISOLATED) -----------------
+        # Right pins (bottom-to-top order in schemdraw inR1..inR4)
+        p5 = ic.inR1  # Pin 5: GND
+        p6 = ic.inR2  # Pin 6: Output (VO)
+        p7 = ic.inR3  # Pin 7: Enable (VE)
+        p8 = ic.inR4  # Pin 8: VCC (+5V)
+
+        # ----------------- INPUT SIDE (ISOLATED, LEFT) -----------------
         if config_mode.startswith("Inverting"):
-            # Standard Inverting Gate: VIN -> RIN -> Pin 2 (Anode); Pin 3 (Cathode) -> GND
-            vin_label = "VIN = 5V (HIGH)" if vin_high else "VIN = 0V (LOW)"
+            # Inverting Gate: VIN -> RIN -> Pin 2 (Anode); Pin 3 (Cathode) -> GND1
+            vin_lbl = "VIN = 5V (HIGH)" if vin_high else "VIN = 0V (LOW)"
+            in_x = p2[0] - 2.1
             d.add(
                 elm.Resistor()
-                .left()
-                .at(p2)
-                .length(1.85)
+                .at((in_x, p2[1]))
+                .to(p2)
                 .label(f"$R_{{IN}}$\n{rin_ohm:.0f} $\\Omega$", loc="top", fontsize=8.0)
             )
-            in_x = d.here[0]
-            d.add(elm.Dot().at((in_x, p2[1])).label(vin_label, loc="left", fontsize=8.0))
+            d.add(elm.Dot().at((in_x, p2[1])).label(vin_lbl, loc="left", fontsize=8.0))
 
-            # Pin 3 (Cathode) to Input Ground
-            d.add(elm.Line().left().at(p3).length(0.65))
-            gnd_in_x = d.here[0]
-            d.add(elm.Line().down().length(0.65))
-            d.add(elm.Ground().label("GND1", loc="bottom", fontsize=7.5))
+            # Pin 3 (Cathode) -> GND1
+            gnd1_x = p3[0] - 0.85
+            gnd1_y = p4[1] - 0.85
+            d.add(elm.Line().at(p3).to((gnd1_x, p3[1])))
+            d.add(elm.Line().at((gnd1_x, p3[1])).to((gnd1_x, gnd1_y)))
+            d.add(elm.Ground().at((gnd1_x, gnd1_y)).label("GND1", loc="bottom", fontsize=7.5))
         else:
-            # Non-Inverting Buffer (Cathode-Driven / Current-Sinking):
-            # +5V -> RIN -> Pin 2 (Anode); Pin 3 (Cathode) -> VIN (LOW=ON, HIGH=OFF)
+            # Non-Inverting Buffer: +5V -> RIN -> Pin 2 (Anode); Pin 3 (Cathode) -> VIN
+            in_x = p2[0] - 2.0
+            vcc1_y = p1[1] + 0.75
             d.add(
                 elm.Resistor()
-                .left()
-                .at(p2)
-                .length(1.65)
+                .at((in_x, p2[1]))
+                .to(p2)
                 .label(f"$R_{{IN}}$\n{rin_ohm:.0f} $\\Omega$", loc="top", fontsize=8.0)
             )
-            v_in_top = d.here[0]
-            d.add(elm.Line().up().length(0.45).label("+5V (Input)", loc="top", fontsize=7.8))
+            d.add(elm.Line().at((in_x, p2[1])).to((in_x, vcc1_y)).label("+5V (Input)", loc="top", fontsize=7.8))
 
-            vin_label = "VIN = 5V (HIGH)" if vin_high else "VIN = 0V (LOW)"
-            d.add(elm.Line().left().at(p3).length(1.65))
-            d.add(elm.Dot().label(vin_label, loc="left", fontsize=8.0))
+            vin_lbl = "VIN = 5V (HIGH)" if vin_high else "VIN = 0V (LOW)"
+            d.add(elm.Line().at(p3).to((in_x, p3[1])))
+            d.add(elm.Dot().at((in_x, p3[1])).label(vin_lbl, loc="left", fontsize=8.0))
 
-        # ----------------- OUTPUT SIDE (ISOLATED) -----------------
-        # Pin 8: +5V VCC & 0.1 uF bypass capacitor to Pin 5 (GND)
+        # ----------------- OUTPUT SIDE (ISOLATED, RIGHT) -----------------
+        vcc_rail_y = p8[1] + 0.95
+        gnd2_rail_y = p5[1] - 0.95
+
+        # Pin 8 (VCC = +5V)
         vcc_x = p8[0] + 0.95
-        vcc_rail_y = p8[1] + 0.85
         d.add(elm.Line().at(p8).to((vcc_x, p8[1])))
-        d.add(elm.Dot().at((vcc_x, p8[1])))
         d.add(elm.Line().at((vcc_x, p8[1])).to((vcc_x, vcc_rail_y)).label("$V_{CC} = +5$ V", loc="top", fontsize=8.2))
+        d.add(elm.Dot().at((vcc_x, vcc_rail_y)))
 
-        # 0.1 uF bypass capacitor from VCC rail to GND
-        cap_x = vcc_x + 2.35
-        gnd_out_y = p5[1] - 0.85
-        d.add(elm.Line().at((vcc_x, vcc_rail_y)).to((cap_x, vcc_rail_y)))
-        d.add(elm.Capacitor().at((cap_x, vcc_rail_y)).to((cap_x, gnd_out_y)).label("0.1 $\\mu$F", loc="right", fontsize=7.8))
-
-        # Pin 5: Output Ground (GND2)
-        d.add(elm.Line().at(p5).to((cap_x, p5[1])))
-        d.add(elm.Dot().at((cap_x, p5[1])))
-        d.add(elm.Line().at((cap_x, p5[1])).to((cap_x, gnd_out_y)))
-        d.add(elm.Ground().at((cap_x, gnd_out_y)).label("GND2", loc="bottom", fontsize=7.5))
-
-        # Pin 7: Enable (VE) -> H (+5V), L (GND), or NC (Open)
-        ve_x = p7[0] + 0.55
+        # Pin 7 (Enable VE): H (+5V), L (GND), or NC (Open)
+        ve_x = p7[0] + 1.55
         d.add(elm.Line().at(p7).to((ve_x, p7[1])))
         if enable_state == "H (+5V)":
             d.add(elm.Line().at((ve_x, p7[1])).to((ve_x, vcc_rail_y)))
             d.add(elm.Dot().at((ve_x, vcc_rail_y)))
         elif enable_state == "L (GND)":
-            d.add(elm.Line().at((ve_x, p7[1])).to((ve_x, gnd_out_y)))
-            d.add(elm.Dot().at((ve_x, gnd_out_y)))
+            d.add(elm.Line().at((ve_x, p7[1])).to((ve_x, gnd2_rail_y)))
+            d.add(elm.Dot().at((ve_x, gnd2_rail_y)))
         else:
             d.add(elm.Dot(open=True).at((ve_x, p7[1])).label("NC (Open)", loc="right", fontsize=7.6))
 
-        # Pin 6: Open-Collector Output (VO) with Pull-Up RPULL to +5V and LED indicator to GND
-        out_node_x = p6[0] + 1.45
-        d.add(elm.Line().at(p6).to((out_node_x, p6[1])))
-        d.add(elm.Dot().at((out_node_x, p6[1])))
+        # Pin 6 (Open-Collector Output VO): Pull-up RPULL to +5V, and RLED + Indicator LED to GND
+        out_x = p6[0] + 2.45
+        d.add(elm.Line().at(p6).to((out_x, p6[1])))
+        d.add(elm.Dot().at((out_x, p6[1])))
 
-        # Pull-up resistor RPULL from Pin 6 to +5V VCC rail
+        # Pull-up resistor RPULL from +5V rail down to Pin 6
+        d.add(elm.Line().at((vcc_x, vcc_rail_y)).to((out_x, vcc_rail_y)))
+        d.add(elm.Dot().at((out_x, vcc_rail_y)))
         d.add(
             elm.Resistor()
-            .at((out_node_x, vcc_rail_y))
-            .to((out_node_x, p6[1]))
+            .at((out_x, vcc_rail_y))
+            .to((out_x, p6[1]))
             .label(f"$R_{{PULL}}$\n{rpull_ohm:.0f} $\\Omega$", loc="right", fontsize=7.8)
         )
-        d.add(elm.Dot().at((out_node_x, vcc_rail_y)))
 
-        # Output Indicator Branch: Pin 6 -> RLED (220 Ohm) -> Indicator LED -> GND
-        led_x = out_node_x + 0.55
-        d.add(elm.Line().at((out_node_x, p6[1])).to((led_x, p6[1])))
-        mid_led_y = (p6[1] + gnd_out_y) / 2.0
+        # Output Indicator Branch: Pin 6 -> RLED -> LED -> GND2
+        led_x = out_x + 1.25
+        mid_y = (p6[1] + gnd2_rail_y) / 2.0
+        d.add(elm.Line().at((out_x, p6[1])).to((led_x, p6[1])))
         d.add(
             elm.Resistor()
             .at((led_x, p6[1]))
-            .to((led_x, mid_led_y))
+            .to((led_x, mid_y))
             .label(f"$R_{{LED}}$\n{rled_ohm:.0f} $\\Omega$", loc="right", fontsize=7.6)
         )
-        led_state_lbl = "LED ON (HIGH)" if led_on else "LED OFF (LOW)"
+        led_lbl = "LED ON" if led_on else "LED OFF"
         d.add(
             elm.LED()
-            .at((led_x, mid_led_y))
-            .to((led_x, gnd_out_y))
-            .label(led_state_lbl, loc="right", fontsize=7.8)
+            .at((led_x, mid_y))
+            .to((led_x, gnd2_rail_y))
+            .label(led_lbl, loc="right", fontsize=7.8)
         )
-        d.add(elm.Dot().at((led_x, gnd_out_y)))
+        d.add(elm.Dot().at((led_x, gnd2_rail_y)))
+
+        # 0.1 uF Decoupling Capacitor between +5V VCC (Pin 8) and GND (Pin 5)
+        cap_x = led_x + 1.35
+        d.add(elm.Line().at((out_x, vcc_rail_y)).to((cap_x, vcc_rail_y)))
+        d.add(
+            elm.Capacitor()
+            .at((cap_x, vcc_rail_y))
+            .to((cap_x, gnd2_rail_y))
+            .label("0.1 $\\mu$F", loc="right", fontsize=7.8)
+        )
+
+        # Pin 5 (GND2) bottom return bus
+        d.add(elm.Line().at(p5).to((p5[0] + 0.65, p5[1])))
+        d.add(elm.Line().at((p5[0] + 0.65, p5[1])).to((p5[0] + 0.65, gnd2_rail_y)))
+        d.add(elm.Line().at((p5[0] + 0.65, gnd2_rail_y)).to((cap_x, gnd2_rail_y)))
+        d.add(elm.Ground().at((p5[0] + 0.65, gnd2_rail_y)).label("GND2", loc="bottom", fontsize=7.5))
 
         buf = io.BytesIO()
         d.save(buf, dpi=220, transparent=False)
