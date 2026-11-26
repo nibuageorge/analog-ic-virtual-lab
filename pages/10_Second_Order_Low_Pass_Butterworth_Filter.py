@@ -98,34 +98,34 @@ with ctrl_col:
     st.subheader("1. Sallen-Key RC Network ($R_2, R_3, C_2, C_3$)")
     r2_kohm = st.slider(
         "Series Resistor $R_2$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=33.0,
-        step=0.5,
+        step=0.1,
         help="Gayakwad Example 7-2 default: R2 = R3 = 33 kΩ with C2 = C3 = 0.0047 µF -> fH ≈ 1.03 kHz."
     )
     r3_kohm = st.slider(
         "Series Resistor $R_3$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=33.0,
-        step=0.5
+        step=0.1
     )
     c2_uf = st.slider(
         "Feedback Capacitor $C_2$ (µF)",
         min_value=0.0010,
-        max_value=0.1000,
-        value=0.0047,
-        step=0.0001,
+        max_value=1.0000,
+        value=0.047,
+        step=0.001,
         format="%.4f",
         help="Gayakwad Example 7-2 default: C2 = 0.0047 µF."
     )
     c3_uf = st.slider(
         "Ground Capacitor $C_3$ (µF)",
         min_value=0.0010,
-        max_value=0.1000,
-        value=0.0047,
-        step=0.0001,
+        max_value=1.000,
+        value=0.047,
+        step=0.001,
         format="%.4f",
         help="Gayakwad Example 7-2 default: C3 = 0.0047 µF."
     )
@@ -133,15 +133,15 @@ with ctrl_col:
     st.subheader("2. Butterworth Passband Gain ($R_1, R_F, R_L$)")
     r1_kohm = st.slider(
         "Input Resistor $R_1$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=27.0,
-        step=0.5,
+        step=0.1,
         help="Gayakwad Example 7-2 default: R1 = 27 kΩ."
     )
     rf_kohm = st.slider(
         "Feedback Resistor $R_F$ (kΩ)",
-        min_value=0.0,
+        min_value=0.1,
         max_value=100.0,
         value=15.82,
         step=0.1,
