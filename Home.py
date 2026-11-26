@@ -40,12 +40,15 @@ OPAMP_EXPERIMENTS = [
     ("pages/18_OpAmp_Inverter_NonInverter_Buffer.py", "18. Op-Amp Inverter, Non-Inverter & Buffer (AC Inputs)", "🔄"),
 ]
 
+# Part B: IC 555 Timer Applications
 TIMER_555_EXPERIMENTS = [
     ("pages/19_555_Astable_Multivibrator.py", "19. Astable Multivibrator using IC 555 Timer", "⏲️"),
     ("pages/20_555_Monostable_Multivibrator.py", "20. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
 ]
+
+# Part C: Optoelectronics Experiments
 OPTOELECTRONICS_EXPERIMENTS = [
-    ("pages/21_Solar_Cell_IV_Characteristics.py", "21. Solar Cell I-V & P-V Characteristics", "☀️"),
+    ("pages/21_Solar_Cell_IV_Characteristics.py", "21. Solar Cell – Efficiency and Fill Factor", "☀️"),
 ]
 
 def render_experiment_list(exp_list):
