@@ -11,24 +11,24 @@ render_sidebar_header()
 
 st.title("Experiment 21: Solar Cell -- Efficiency and Fill Factor")
 st.markdown(
-    "**Aim:** To plot the $V$-$I$ characteristics of the solar cell under an incandescent lamp and hence determine "
-    "the **Fill Factor ($FF$)** and **Efficiency ($\\eta$)**."
+    "**Aim:** To plot the $V$-$I$ characteristics of a solar cell under a calibrated solar simulator light source "
+    "across real sunlight irradiance levels ($G$ in $\\text{W/m}^2$) and determine the **Fill Factor ($FF$)** and **Efficiency ($\\eta$)**."
 )
 
 # -------------------------------------------------------------------------
 # Helper: Draw Solar Cell Experimental Schematic
 # -------------------------------------------------------------------------
-def draw_solar_cell_schematic(r_load_ohm, dist_cm, p_light_w):
+def draw_solar_cell_schematic(r_load_ohm, irrad_wm2):
     with schemdraw.Drawing(show=False) as d:
         d.config(unit=2.5, fontsize=8.2)
 
-        # Left branch: Solar Cell illuminated by incandescent bulb at distance r
+        # Left branch: Solar Cell illuminated by calibrated Solar Simulator
         sc = d.add(
             elm.Photodiode()
             .up()
             .at((0, 0))
             .length(2.5)
-            .label(f"Solar Cell\n($P_{{light}}={p_light_w:.0f}$ W,\n$r={dist_cm:.0f}$ cm)", loc="left", fontsize=8.0)
+            .label(f"Solar Cell\n(Solar Sim:\n$G = {irrad_wm2:.0f}$ W/m$^2$)", loc="left", fontsize=8.0)
         )
         top_y = sc.end[1]
         bot_y = sc.start[1]
@@ -56,30 +56,28 @@ def draw_solar_cell_schematic(r_load_ohm, dist_cm, p_light_w):
         return d.draw(show=False).fig
 
 # -------------------------------------------------------------------------
-# Physics Model: Eqs. (1)-(3) from Lab Manual
+# Physics Model: Solar Simulator Irradiance G (W/m^2)
 # I = -Iph + I0 * (exp(eV / (eta * k * T)) - 1)
 # -------------------------------------------------------------------------
-def compute_solar_cell_curve(p_bulb_w, optical_frac, dist_cm, area_cm2, eta_ideality, temp_c):
+def compute_solar_cell_curve(irrad_wm2, area_cm2, eta_ideality, temp_c):
     e_charge = 1.60217663e-19
     k_boltz = 1.380649e-23
     T_kelvin = temp_c + 273.15
     vt = (eta_ideality * k_boltz * T_kelvin) / e_charge
 
-    # Spherical radiation distribution: I_rad = P_light / (4 * pi * r^2)
-    p_light_w = p_bulb_w * optical_frac
-    r_m = dist_cm * 1e-2
+    # Incident optical power on active cell area A: Pin = G * A
     area_m2 = area_cm2 * 1e-4
-
-    irradiance_wm2 = p_light_w / (4.0 * np.pi * (r_m ** 2))
-    p_in_w = irradiance_wm2 * area_m2
+    p_in_w = irrad_wm2 * area_m2
     p_in_mw = p_in_w * 1e3
 
-    # Photocurrent Iph = K * Irradiance (calibrated to typical lab Si solar cell: ~35 mA at 1000 W/m^2 for 10 cm^2)
+    # Photocurrent Iph = K * G (calibrated to standard crystalline Si solar cell: Jsc = 35 mA/cm^2 at 1000 W/m^2)
     k_device = 3.5e-5  # A / (W/m^2) per cm^2
-    i_ph = k_device * area_cm2 * irradiance_wm2
+    i_ph = k_device * area_cm2 * irrad_wm2
 
-    # Reverse saturation current I0 (A)
-    i_0 = 2.5e-9 * area_cm2
+    # Reverse saturation current I0 (A) scaled with temperature
+    i_0 = 2.5e-9 * area_cm2 * ((T_kelvin / 298.15) ** 3) * np.exp(
+        (e_charge * 1.12 / (eta_ideality * k_boltz)) * (1.0 / 298.15 - 1.0 / T_kelvin)
+    )
 
     # Open-circuit voltage Voc when I = 0 => Iph = I0 * (exp(Voc / vt) - 1)
     voc = vt * np.log((i_ph / i_0) + 1.0) if i_ph > 0 else 0.0
@@ -92,8 +90,7 @@ def compute_solar_cell_curve(p_bulb_w, optical_frac, dist_cm, area_cm2, eta_idea
     p_out_w = v_arr * i_mag
 
     return {
-        "p_light_w": p_light_w,
-        "irradiance_wm2": irradiance_wm2,
+        "irradiance_wm2": irrad_wm2,
         "p_in_mw": p_in_mw,
         "i_ph": i_ph,
         "i_0": i_0,
@@ -134,37 +131,35 @@ def solve_for_load_resistance(r_ohm, model):
 ctrl_col, disp_col = st.columns([1.0, 2.3], gap="large")
 
 with ctrl_col:
-    st.subheader("1. Lamp & Geometry Setup")
-    p_bulb_w = st.slider("Incandescent Bulb Electrical Power (W)", 40.0, 200.0, 100.0, 10.0)
-    optical_pct = st.slider(
-        "Optical Output Fraction of Bulb (%)",
-        min_value=10.0,
-        max_value=30.0,
-        value=20.0,
-        step=1.0,
-        help="Lab manual assumption: 100 W incandescent bulb emits ~20 W of light power (20%)."
+    st.subheader("1. Solar Radiation Source (AM1.5G)")
+    irrad_wm2 = st.slider(
+        "Solar Irradiance $G$ (W/m$^2$)",
+        min_value=100.0,
+        max_value=1200.0,
+        value=1000.0,
+        step=50.0,
+        help="Real sunlight intensity scale: 100 W/m^2 (overcast) to 1000 W/m^2 (1 Sun STC) and 1200 W/m^2 (peak tropical noon)."
     )
-    dist_cm = st.slider("Bulb-to-Solar-Cell Distance $r$ (cm)", 5.0, 30.0, 10.0, 1.0)
-    area_cm2 = st.slider("Solar Cell Surface Area $A$ (cm$^2$)", 2.0, 25.0, 10.0, 0.5)
+    area_cm2 = st.slider("Solar Cell Active Surface Area $A$ (cm$^2$)", 2.0, 25.0, 10.0, 0.5)
 
     st.subheader("2. Variable Load Resistance ($R$)")
-    load_presets = [0, 5, 10, 15, 20, 30, 50, 100, 200, 500, 1000, 2000, 5000, 10000, "Infinity"]
+    load_presets = [0, 1, 2, 5, 10, 15, 20, 30, 50, 100, 200, 500, 1000, 5000, 10000, "Infinity"]
     r_selected = st.select_slider(
         "Select Load Resistor $R$ (Ohm)",
         options=load_presets,
-        value=20,
+        value=2,
         help="Vary R from 0 Ohm (short circuit, Isc) to Infinity (open circuit, Voc)."
     )
     r_load_ohm = np.inf if r_selected == "Infinity" else float(r_selected)
 
-    st.subheader("3. Diode Parameters")
+    st.subheader("3. Cell & Ambient Parameters")
     eta_ideality = st.slider("Diode Ideality Factor $\\eta$", 1.0, 2.0, 1.35, 0.05)
-    temp_c = st.slider("Ambient Temperature $T$ ($^\\circ$C)", 20.0, 45.0, 27.0, 1.0)
+    temp_c = st.slider("Cell Temperature $T$ ($^\\circ$C)", 15.0, 60.0, 25.0, 1.0)
 
 # -------------------------------------------------------------------------
 # Compute Curves, MPP, Fill Factor & Efficiency
 # -------------------------------------------------------------------------
-model = compute_solar_cell_curve(p_bulb_w, optical_pct / 100.0, dist_cm, area_cm2, eta_ideality, temp_c)
+model = compute_solar_cell_curve(irrad_wm2, area_cm2, eta_ideality, temp_c)
 
 isc_ma = model["i_ph"] * 1e3
 voc_v = model["voc"]
@@ -178,7 +173,7 @@ r_opt_ohm = vm_v / max(im_ma * 1e-3, 1e-9)
 # Eq. (4): Fill Factor FF = (Im * Vm) / (Isc * Voc)
 ff_val = (im_ma * vm_v) / (isc_ma * voc_v) if (isc_ma * voc_v) > 0 else 0.0
 
-# Eq. (5): Efficiency = P_out(max) / P_in
+# Eq. (5): Efficiency = P_out(max) / P_in, where P_in = G * A
 eff_pct = (pmax_mw / model["p_in_mw"]) * 100.0 if model["p_in_mw"] > 0 else 0.0
 
 # Current load operating point (V', I')
@@ -195,19 +190,19 @@ with disp_col:
     m3.metric("Fill Factor ($FF$)", f"{ff_val:.3f} ({ff_val*100:.1f}%)")
     m4.metric("Efficiency ($\\eta = P_{{out}}/P_{{in}}$)", f"{eff_pct:.2f} %")
 
+    sun_fraction = irrad_wm2 / 1000.0
     st.info(
-        f"**Incident Radiation & Power Balance:** "
-        f"$P_{{light}} = {model['p_light_w']:.1f}$ W over sphere of radius $r = {dist_cm:.0f}$ cm $\\implies$ "
-        f"Irradiance $= {model['irradiance_wm2']:.2f}$ W/m$^2$ $\\implies$ "
-        f"Incident Power $P_{{in}} = {model['p_in_mw']:.2f}$ mW | "
-        f"**Max Output $P_{{out}} = {pmax_mw:.2f}$ mW** at $V_m = {vm_v:.3f}$ V, $I_m = {im_ma:.2f}$ mA ($R_{{opt}} \\approx {r_opt_ohm:.1f}\\;\\Omega$)."
+        f"**Incident Solar Power Balance ({sun_fraction:.2f} Sun):** "
+        f"Irradiance $G = {irrad_wm2:.0f}$ W/m$^2$ on cell area $A = {area_cm2:.1f}$ cm$^2$ ($ {area_cm2*1e-4:.4f}$ m$^2$) $\\implies$ "
+        f"**Incident Power $P_{{in}} = G \\cdot A = {model['p_in_mw']:.2f}$ mW** | "
+        f"**Max Output $P_{{out}} = {pmax_mw:.2f}$ mW** at $V_m = {vm_v:.3f}$ V, $I_m = {im_ma:.2f}$ mA ($R_{{opt}} \\approx {r_opt_ohm:.2f}\\;\\Omega$)."
     )
 
     schem_col, plot_col = st.columns([1.05, 1.45], gap="medium")
 
     with schem_col:
         st.markdown("**Experimental Circuit Diagram**")
-        fig_sch = draw_solar_cell_schematic(r_load_ohm, dist_cm, model["p_light_w"])
+        fig_sch = draw_solar_cell_schematic(r_load_ohm, irrad_wm2)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
         r_disp = "Infinity" if np.isinf(r_load_ohm) else f"{r_load_ohm:.0f} Ohm"
@@ -217,11 +212,11 @@ with disp_col:
         )
 
     with plot_col:
-        st.markdown("**Solar Cell $V$-$I$ & Power Curves (with Load Line & MPP Rectangle)**")
+        st.markdown(f"**Solar Cell $V$-$I$ & Power Curves ($G = {irrad_wm2:.0f}$ W/m$^2$)**")
         fig_iv, (ax_iv, ax_pv) = plt.subplots(2, 1, figsize=(7.6, 5.4), sharex=True)
 
         # Top Plot: V-I Curve + Max Power Rectangle + Load Line
-        ax_iv.plot(model["v_arr"], model["i_mag"] * 1e3, color="#1f77b4", linewidth=2.3, label="Solar Cell $I$-$V$ Curve")
+        ax_iv.plot(model["v_arr"], model["i_mag"] * 1e3, color="#1f77b4", linewidth=2.3, label=f"Solar Cell $I$-$V$ ($G = {irrad_wm2:.0f}$ W/m$^2$)")
         ax_iv.fill_between([0, vm_v], 0, im_ma, color="#2ca02c", alpha=0.14, label=f"Max Power Rectangle ($I_m V_m = {pmax_mw:.2f}$ mW)")
         ax_iv.plot([0, vm_v, vm_v], [im_ma, im_ma, 0], color="#2ca02c", linestyle="--", linewidth=1.2)
 
@@ -248,19 +243,19 @@ with disp_col:
         plt.close(fig_iv)
 
     # ---------------------------------------------------------------------
-    # Secondary Tabs: Observation Table + 4th-Quadrant Plot + Lab Manual Theory
+    # Secondary Tabs: Load Table + Irradiance Comparison + Theory & Procedure
     # ---------------------------------------------------------------------
-    tab_obs, tab_4q, tab_manual = st.tabs([
-        "Observation Table (0 Ohm to Infinity)",
-        "Fourth-Quadrant Characteristic (Eqs. 2 & 3)",
+    tab_obs, tab_irrad, tab_manual = st.tabs([
+        "Observation Table 1: Varying Load R (0 Ohm to Infinity)",
+        "Observation Table 2: Varying Solar Irradiance G (200 to 1000 W/m^2)",
         "Aim, Theory, Procedure & Result"
     ])
 
     with tab_obs:
         st.markdown(
-            f"**Tabular Column ($r = {dist_cm:.0f}$ cm, $A = {area_cm2:.1f}$ cm$^2$, $P_{{in}} = {model['p_in_mw']:.2f}$ mW):**"
+            f"**Tabular Column 1 -- Load Resistance Sweep at $G = {irrad_wm2:.0f}$ W/m$^2$ ($A = {area_cm2:.1f}$ cm$^2$, $P_{{in}} = {model['p_in_mw']:.2f}$ mW):**"
         )
-        manual_r_list = [0, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, np.inf]
+        manual_r_list = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 10000, np.inf]
         rows = []
         for r_val in manual_r_list:
             v_r, i_r_a, p_r_mw = solve_for_load_resistance(r_val, model)
@@ -278,41 +273,82 @@ with disp_col:
                 i_str = f"{i_r_ma:.2f}"
                 v_str = f"{v_r:.3f}"
             rows.append({
-                "Load Resistance (Ohm)": r_str,
-                "Current I in (mA)": i_str,
-                "Voltage V in (volt)": v_str,
-                "Power output = I x V (mW)": f"{p_r_mw:.2f}",
+                "Load Resistance R (Ohm)": r_str,
+                "Current I (mA)": i_str,
+                "Voltage V (volt)": v_str,
+                "Power Output = I x V (mW)": f"{p_r_mw:.2f}",
             })
         st.table(rows)
 
-    with tab_4q:
-        fig_4q, ax_4q = plt.subplots(figsize=(8.6, 3.8))
-        ax_4q.plot(model["v_arr"], model["i_fourth_quad"] * 1e3, color="#1f77b4", linewidth=2.2, label="Eq. (2): $I = -I_{ph} + I_0(e^{eV/\\eta kT} - 1)$")
-        if 0 < r_load_ohm < np.inf:
-            v_ll = np.linspace(0, voc_v, 100)
-            ax_4q.plot(v_ll, -(v_ll / r_load_ohm) * 1e3, color="#ff7f0e", linestyle="--", linewidth=1.6, label=f"Eq. (3) Load Line: $I = -V/R$ ($R = {r_load_ohm:.0f}\\;\\Omega$)")
-        ax_4q.scatter([v_prime], [-i_prime_ma], color="#d62728", zorder=6, s=55, label=f"Operating Point P ($V'={v_prime:.3f}$V, $I'=-{i_prime_ma:.2f}$mA)")
-        style_cro_axes(ax_4q, title="Fourth-Quadrant Solar Cell Characteristic & Load Line Intersection (Eqs. 2 & 3)", xlabel="Voltage V (V)", ylabel="Net Current I (mA)")
-        ax_4q.legend(loc="lower left", fontsize=8)
+    with tab_irrad:
+        st.markdown(
+            f"**Tabular Column 2 -- Performance Across Real Sunlight Intensities ($A = {area_cm2:.1f}$ cm$^2$, $T = {temp_c:.0f}^\\circ$C):**"
+        )
+        g_levels = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0]
+        g_rows = []
+        fig_g, ax_g = plt.subplots(figsize=(8.6, 3.6))
+        colors_g = ["#9467bd", "#ff7f0e", "#2ca02c", "#1f77b4", "#d62728", "#8c564b"]
+
+        for g_val, col in zip(g_levels, colors_g):
+            m_g = compute_solar_cell_curve(g_val, area_cm2, eta_ideality, temp_c)
+            idx_m = int(np.argmax(m_g["p_out_w"]))
+            isc_g = m_g["i_ph"] * 1e3
+            voc_g = m_g["voc"]
+            pmax_g = m_g["p_out_w"][idx_m] * 1e3
+            ff_g = pmax_g / (isc_g * voc_g) if (isc_g * voc_g) > 0 else 0.0
+            eff_g = (pmax_g / m_g["p_in_mw"]) * 100.0 if m_g["p_in_mw"] > 0 else 0.0
+
+            ax_g.plot(m_g["v_arr"], m_g["i_mag"] * 1e3, color=col, linewidth=2.0, label=f"$G = {g_val:.0f}$ W/m$^2$ ({g_val/1000:.1f} Sun)")
+            g_rows.append({
+                "Solar Irradiance G (W/m^2)": f"{g_val:.0f} ({g_val/1000:.1f} Sun)",
+                "Incident Power Pin (mW)": f"{m_g['p_in_mw']:.2f}",
+                "Isc (mA)": f"{isc_g:.2f}",
+                "Voc (V)": f"{voc_g:.3f}",
+                "Pmax (mW)": f"{pmax_g:.2f}",
+                "Fill Factor (FF)": f"{ff_g:.3f}",
+                "Efficiency (%)": f"{eff_g:.2f}",
+            })
+
+        style_cro_axes(ax_g, title="Family of Solar Cell I-V Curves Across Real Sunlight Intensities (G)", xlabel="Voltage V (V)", ylabel="Current |I| (mA)")
+        ax_g.legend(loc="lower left", fontsize=7.8)
         plt.tight_layout()
-        st.pyplot(fig_4q)
-        plt.close(fig_4q)
+        st.pyplot(fig_g)
+        plt.close(fig_g)
+        st.table(g_rows)
 
     with tab_manual:
         st.markdown(
             f"""
             ### Laboratory Write-Up & Results
 
-            * **Components:** Solar Cell, variable resistors, milli-ammeter, voltmeter, incandescent bulb ({p_bulb_w:.0f} W).
-            * **Working Equations:**
-              1. **Dark Diode Current:** $I_{{\\text{{diode}}}} = I_0 \\left(e^{{\\frac{{eV}}{{\\eta k T}}}} - 1\\right)$
-              2. **Net Illuminated Solar Cell Current:** $I = -I_{{ph}} + I_0 \\left(e^{{\\frac{{eV}}{{\\eta k T}}}} - 1\\right)$
-              3. **Load Line Equation:** $I = -\\frac{{V}}{{R}}$
-              4. **Fill Factor:** $FF = \\frac{{I_m V_m}}{{I_{{sc}} V_{{oc}}}} = \\frac{{{im_ma:.2f}\\text{{ mA}} \\times {vm_v:.3f}\\text{{ V}}}}{{{isc_ma:.2f}\\text{{ mA}} \\times {voc_v:.3f}\\text{{ V}}}} = {ff_val:.3f}$
-              5. **Efficiency:** $\\text{{Efficiency}} = \\frac{{P_{{out}}}}{{P_{{in}}}} = \\frac{{{pmax_mw:.2f}\\text{{ mW}}}}{{{model['p_in_mw']:.2f}\\text{{ mW}}}} = {eff_pct:.2f}\\%$
+            * **Components:** Silicon Solar Cell, calibrated solar simulator light source ($100\\text{{--}}1200\\text{{ W/m}}^2$), variable load resistor box, milli-ammeter, digital voltmeter.
+
+            * **Theory & Working Equations:**
+              1. **Dark Diode Current:**
+                 $$I_{{\\text{{diode}}}} = I_0 \\left(e^{{\\frac{{eV}}{{\\eta k T}}}} - 1\\right)$$
+                 where $\\eta$ is the diode ideality factor ($1 \\le \\eta \\le 2$), $k$ is Boltzmann's constant, and $T$ is the absolute temperature.
+              2. **Photocurrent Generation:**
+                 $$I_{{ph}} = K \\cdot G$$
+                 where $G$ is the incident solar irradiance in $\\text{{W/m}}^2$ ($1000\\text{{ W/m}}^2 = 1\\text{{ Sun}}$ under AM1.5G Standard Test Conditions) and $K$ is a device-specific responsivity constant.
+              3. **Net Illuminated Solar Cell Current:**
+                 $$I = -I_{{ph}} + I_{{\\text{{diode}}}} = -I_{{ph}} + I_0 \\left(e^{{\\frac{{eV}}{{\\eta k T}}}} - 1\\right)$$
+              4. **Load Line Equation:**
+                 $$I = -\\frac{{V}}{{R}}$$
+                 The intersection $P(V', I')$ of the load line with the $V$-$I$ curve determines the operating point, delivering power $P_{{\\text{{out}}}} = I' \\cdot V'$.
+              5. **Fill Factor ($FF$):**
+                 $$FF = \\frac{{I_m V_m}}{{I_{{sc}} V_{{oc}}}} = \\frac{{{im_ma:.2f}\\text{{ mA}} \\times {vm_v:.3f}\\text{{ V}}}}{{{isc_ma:.2f}\\text{{ mA}} \\times {voc_v:.3f}\\text{{ V}}}} = {ff_val:.3f}$$
+              6. **Power Conversion Efficiency ($\\eta$):**
+                 With total incident solar power $P_{{\\text{{in}}}} = G \\cdot A = {irrad_wm2:.0f}\\text{{ W/m}}^2 \\times {area_cm2*1e-4:.4f}\\text{{ m}}^2 = {model['p_in_mw']:.2f}\\text{{ mW}}$:
+                 $$\\text{{Efficiency}} (\\eta) = \\frac{{P_{{\\text{{out,max}}}}}}{{P_{{\\text{{in}}}}}} \\times 100\\% = \\frac{{{pmax_mw:.2f}\\text{{ mW}}}}{{{model['p_in_mw']:.2f}\\text{{ mW}}}} \\times 100\\% = {eff_pct:.2f}\\%$$
+
+            * **Procedure:**
+              1. Connect the solar cell in series with a variable load resistor $R$ and a milli-ammeter, and connect a voltmeter in parallel across the solar cell.
+              2. Illuminate the solar cell uniformly using the calibrated solar radiation source and set the desired irradiance $G$ (e.g., $1000\\text{{ W/m}}^2$ for 1 Sun STC).
+              3. Vary the load resistance $R$ from $0\\;\\Omega$ (short circuit, giving $I_{{sc}}$) to $\\infty$ (open circuit, giving $V_{{oc}}$) and record the corresponding current $I$ and voltage $V$.
+              4. Plot $I$ versus $V$, locate the maximum power point $(V_m, I_m)$ maximizing the area $I_m V_m$, and compute the Fill Factor ($FF$) and Efficiency ($\\eta = P_{{out}}/P_{{in}}$).
 
             * **Result:**
               * **Fill Factor of the given solar cell** = **{ff_val:.3f}** (**{ff_val*100:.1f}%**)
-              * **Efficiency of the given solar cell** = **{eff_pct:.2f} %**
+              * **Efficiency of the given solar cell at $G = {irrad_wm2:.0f}\\text{{ W/m}}^2$** = **{eff_pct:.2f} %**
             """
         )
