@@ -54,6 +54,7 @@ OPTOELECTRONICS_EXPERIMENTS = [
     ("pages/24_Photodiode_Photovoltaic_Mode.py", "24. Photodiode in Photovoltaic (Zero-Bias) Mode", "📡"),
     ("pages/25_Photodiode_Photoconductive_Mode.py", "25. Photodiode in Photoconductive (Reverse-Bias) Mode", "🔬"),
     ("pages/26_Optocoupler_6N137_Logic_Gate.py", "26. High-Speed Optocoupler (6N137) as a Logic Gate", "🔌"),
+    ("pages/27_Optocoupler_PC817_CTR_Characteristics.py", "27. Optocoupler (PC817) – CTR & Characteristics", "🔄"),
 ]
 
 def render_experiment_list(exp_list):
