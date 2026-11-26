@@ -83,10 +83,10 @@ with ctrl_col:
     st.subheader("1. Bridge & Grounded Load Resistors")
     r_kohm = st.slider(
         "Equal Bridge Resistors $R$ (kOhm)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
-        step=0.5,
+        step=0.1,
         help="All four bridge resistors R must be equal so IL = Vin / R (default 10 kOhm -> 0.10 mA/V)."
     )
     rl_kohm = st.slider(
