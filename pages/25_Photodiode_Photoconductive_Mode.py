@@ -54,19 +54,30 @@ def draw_photoconductive_schematic(rf_kohm, vbias_v, vcc):
         d.add(elm.Line().at((noninv_x, noninv_y)).to((gnd_plus_x, noninv_y)))
         d.add(elm.Ground().at((gnd_plus_x, noninv_y)))
 
-        # Reverse-Bias Section (Left of virtual ground):
-        # Cathode on left (connected to +Vbias), Anode on right (connected to inverting '-' node)
+# Reverse-Bias Section (Left of virtual ground):
+        # .reverse() places the Cathode (bar) on the LEFT (+Vbias) and Anode (triangle) on the RIGHT (inverting '-' node)
         src_x = sx - 2.35
         gnd_bias_y = sy - 1.85
 
         d.add(
             elm.Photodiode()
             .right()
+            .reverse()
             .at((src_x, sy))
             .tox(sx)
             .label("BPW34 (Reverse-Bias)", loc="top", fontsize=8.0)
         )
         d.add(elm.Dot().at((src_x, sy)))
+
+        # DC Reverse-Bias Source (+Vbias at top connected to Cathode, '-' grounded at bottom)
+        d.add(
+            elm.SourceV()
+            .up()
+            .at((src_x, gnd_bias_y))
+            .toy(sy)
+            .label(f"$V_{{bias}}$\n+{vbias_v:.1f} V", loc="left", fontsize=8.2)
+        )
+        d.add(elm.Ground().at((src_x, gnd_bias_y)))
 
         # DC Reverse-Bias Source (+Vbias at top connected to Cathode, '-' grounded at bottom)
         d.add(
