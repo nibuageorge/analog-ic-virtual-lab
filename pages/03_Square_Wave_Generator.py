@@ -106,7 +106,7 @@ with ctrl_col:
     st.subheader("1. Timing Components ($R, C$)")
     r_kohm = st.slider(
         "Timing Resistor $R$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=10.0,
         step=0.5,
@@ -115,16 +115,16 @@ with ctrl_col:
     c_uf = st.slider(
         "Timing Capacitor $C$ (µF)",
         min_value=0.005,
-        max_value=0.500,
-        value=0.050,
-        step=0.005,
+        max_value=1.000,
+        value=0.047,
+        step=0.001,
         format="%.3f"
     )
 
     st.subheader("2. Positive Feedback Divider ($R_1, R_2$)")
     r1_kohm = st.slider(
         "Feedback Resistor $R_1$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
         step=0.2,
@@ -132,7 +132,7 @@ with ctrl_col:
     )
     r2_kohm = st.slider(
         "Feedback Resistor $R_2$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=11.6,
         step=0.2,
