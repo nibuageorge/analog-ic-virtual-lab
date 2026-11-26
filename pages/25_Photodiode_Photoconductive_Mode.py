@@ -154,8 +154,8 @@ with ctrl_col:
     )
     rf_kohm = st.slider(
         "Feedback Resistor $R_f$ (kOhm)",
-        min_value=100.0,
-        max_value=1000.0,
+        min_value=1.0,
+        max_value=100.0,
         value=220.0,
         step=20.0,
         help="Standard feedback resistor range for photoconductive mode: 100 kOhm to 1 MOhm."
