@@ -172,7 +172,7 @@ with ctrl_col:
         min_value=0.005,
         max_value=1.000,
         value=0.100,
-        step=0.005,
+        step=0.001,
         format="%.3f",
         help="Default 0.100 uF gives tp = 1.10 ms."
     )
