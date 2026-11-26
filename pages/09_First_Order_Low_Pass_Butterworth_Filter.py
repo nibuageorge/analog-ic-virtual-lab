@@ -90,16 +90,16 @@ with ctrl_col:
         max_value=50.0,
         value=15.9,
         step=0.1,
-        help="Gayakwad Fig. 7-2(a) default: 20-kΩ pot set at 15.9 kΩ with C = 0.01 µF -> fH ≈ 1.00 kHz."
+        help="Gayakwad default: 20-kΩ pot set at 15.9 kΩ with C = 0.01 µF -> fH ≈ 1.00 kHz."
     )
     c_uf = st.slider(
         "Filter Capacitor $C$ (µF)",
         min_value=0.001,
-        max_value=0.200,
+        max_value=1.000,
         value=0.010,
         step=0.001,
         format="%.3f",
-        help="Gayakwad Fig. 7-2(a) default: 0.01 µF."
+        help="Gayakwad default: 0.01 µF."
     )
 
     st.subheader("2. Passband Gain Network ($R_1, R_F, R_L$)")
@@ -109,7 +109,7 @@ with ctrl_col:
         max_value=50.0,
         value=10.0,
         step=0.5,
-        help="Gayakwad Fig. 7-2(a) default: 10 kΩ."
+        help="Gayakwad default: 10 kΩ."
     )
     rf_kohm = st.slider(
         "Feedback Resistor $R_F$ (kΩ)",
