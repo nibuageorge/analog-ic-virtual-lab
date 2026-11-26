@@ -10,9 +10,9 @@ render_sidebar_header()
 
 st.title("Experiment 27: Optocoupler (PC817) -- Current Transfer Ratio (CTR) & Characteristics")
 st.markdown(
-    "**Aim:** To understand the construction and working principle of an optocoupler (**PC817**), "
-    "determine its **Current Transfer Ratio ($\text{CTR} = \frac{I_C}{I_F} \times 100\%$)**, and plot the "
-    "**Input ($V_F$ vs. $I_F$)**, **Output ($V_{CE}$ vs. $I_C$)**, and **Transfer ($I_F$ vs. $I_C$)** characteristic curves."
+    r"**Aim:** To understand the construction and working principle of an optocoupler (**PC817**), "
+    r"determine its **Current Transfer Ratio ($\text{CTR} = \frac{I_C}{I_F} \times 100\%$)**, and plot the "
+    r"**Input ($V_F$ vs. $I_F$)**, **Output ($V_{CE}$ vs. $I_C$)**, and **Transfer ($I_F$ vs. $I_C$)** characteristic curves."
 )
 
 # -------------------------------------------------------------------------
@@ -31,21 +31,6 @@ def draw_resistor_h(ax, x0, x1, y, label="", fontsize=8.0):
     )
     if label:
         ax.text(xm, y + 0.17, label, ha="center", va="bottom", fontsize=fontsize, color="#0f172a")
-
-
-def draw_resistor_v(ax, x, y_top, y_bot, label="", fontsize=8.0):
-    ym = 0.5 * (y_top + y_bot)
-    rw, rh = 0.20, 0.56
-    ax.plot([x, x], [y_top, ym + rh / 2], color="#0f172a", lw=1.5)
-    ax.plot([x, x], [ym - rh / 2, y_bot], color="#0f172a", lw=1.5)
-    ax.add_patch(
-        patches.Rectangle(
-            (x - rw / 2, ym - rh / 2), rw, rh,
-            lw=1.4, ec="#0f172a", fc="#cbd5e1", zorder=4
-        )
-    )
-    if label:
-        ax.text(x + 0.16, ym, label, ha="left", va="center", fontsize=fontsize, color="#0f172a")
 
 
 def draw_meter(ax, x, y, text, fontsize=7.8):
@@ -94,12 +79,12 @@ def draw_pc817_schematic(vin_v, vcc_v, rin_ohm, rl_ohm, vf_v, if_ma, vce_v, ic_m
 
     # Internal Silicon NPN Phototransistor (Right side inside package)
     qx = 0.45
-    ax.plot([qx, qx], [-0.36, 0.36], color="#0f172a", lw=2.0)  # Base bar
-    ax.plot([qx, qx + 0.35, ic_r], [0.16, 0.45, y_top], color="#0f172a", lw=1.4)  # Collector
-    ax.plot([qx, qx + 0.35, ic_r], [-0.16, -0.45, y_bot], color="#0f172a", lw=1.4)  # Emitter
+    ax.plot([qx, qx], [-0.36, 0.36], color="#0f172a", lw=2.0)
+    ax.plot([qx, qx + 0.35, ic_r], [0.16, 0.45, y_top], color="#0f172a", lw=1.4)
+    ax.plot([qx, qx + 0.35, ic_r], [-0.16, -0.45, y_bot], color="#0f172a", lw=1.4)
     ax.annotate("", xy=(qx + 0.35, -0.45), xytext=(qx + 0.12, -0.26), arrowprops=dict(arrowstyle="->", lw=1.3, color="#0f172a"))
 
-    # 2. Input Side Circuit (Left: VIN -> RIN -> Milliammeter mA -> Pin 1; Voltmeter VF across Pins 1-2; Pin 2 -> GND1)
+    # 2. Input Side Circuit (Left)
     p1_x = ic_l - 0.28
     vf_x = -2.15
     ma_in_x = -3.05
@@ -107,8 +92,8 @@ def draw_pc817_schematic(vin_v, vcc_v, rin_ohm, rl_ohm, vf_v, if_ma, vce_v, ic_m
     vin_x = -5.05
 
     ax.plot([vin_x, rin_l], [y_top, y_top], color="#0f172a", lw=1.5)
-    draw_resistor_h(ax, rin_l, ma_in_x - 0.24, y_top, label=f"$R_{{IN}}$ ({rin_ohm:.0f}$\\Omega$)", fontsize=7.8)
-    ax.plot([ma_in_x - 0.24, p1_x], [y_top, y_top], color="#0f172a", lw=1.5)
+    draw_resistor_h(ax, rin_l, ma_in_x - 0.24, y_top, label=f"$R_{{IN}}$ ({rin_ohm:.0f} \u03a9)", fontsize=7.8)
+    ax.plot([ma_in_x + 0.24, p1_x], [y_top, y_top], color="#0f172a", lw=1.5)
     draw_meter(ax, ma_in_x, y_top, "mA")
     ax.text(ma_in_x, y_top + 0.32, f"$I_F$={if_ma:.1f}mA", ha="center", va="bottom", fontsize=7.4, color="#1d4ed8")
 
@@ -134,17 +119,17 @@ def draw_pc817_schematic(vin_v, vcc_v, rin_ohm, rl_ohm, vf_v, if_ma, vce_v, ic_m
     ax.plot([gnd1_x - 0.14, gnd1_x + 0.14], [y_bot - 0.41, y_bot - 0.41], color="#0f172a", lw=1.4)
     ax.plot([gnd1_x - 0.06, gnd1_x + 0.06], [y_bot - 0.50, y_bot - 0.50], color="#0f172a", lw=1.3)
 
-    # 3. Output Side Circuit (Right: Pin 4 -> Milliammeter mA -> RL -> VCC; Voltmeter VCE across Pins 4-3; Pin 3 -> GND2)
+    # 3. Output Side Circuit (Right)
     p4_x = ic_r + 0.28
     vce_x = 2.15
     ma_out_x = 3.05
     rl_r = 4.35
     vcc_x = 5.05
 
-    ax.plot([p4_x, rl_r], [y_top, y_top], color="#0f172a", lw=1.5)
+    ax.plot([p4_x, ma_out_x - 0.24], [y_top, y_top], color="#0f172a", lw=1.5)
     draw_meter(ax, ma_out_x, y_top, "mA")
     ax.text(ma_out_x, y_top + 0.32, f"$I_C$={ic_ma:.1f}mA", ha="center", va="bottom", fontsize=7.4, color="#b91c1c")
-    draw_resistor_h(ax, ma_out_x + 0.24, rl_r, y_top, label=f"$R_L$ ({rl_ohm:.0f}$\\Omega$)", fontsize=7.8)
+    draw_resistor_h(ax, ma_out_x + 0.24, rl_r, y_top, label=f"$R_L$ ({rl_ohm:.0f} \u03a9)", fontsize=7.8)
     ax.plot([rl_r, vcc_x], [y_top, y_top], color="#0f172a", lw=1.5)
 
     # Voltmeter VCE across Pins 4 and 3
@@ -186,12 +171,10 @@ def draw_pc817_schematic(vin_v, vcc_v, rin_ohm, rl_ohm, vf_v, if_ma, vce_v, ic_m
 # Physics Model: PC817 GaAs IR LED + Silicon NPN Phototransistor
 # -------------------------------------------------------------------------
 def solve_input_led(vin_v, rin_ohm):
-    # GaAs IR LED Shockley equation: IF = IS * (exp(VF / (n*VT)) - 1), VF ~ 1.15 - 1.25 V at 5-20 mA
-    is_led = 2.5e-14  # A
-    n_vt = 0.044      # V (n ~ 1.7 at 300 K)
+    is_led = 2.5e-14
+    n_vt = 0.044
     if vin_v <= 0.0:
         return 0.0, 0.0
-    # Solve Vin = VF + IF * RIN via Newton-Raphson
     vf = min(1.2, vin_v * 0.8)
     for _ in range(35):
         if_a = is_led * (np.exp(np.clip(vf / n_vt, -30, 40)) - 1.0)
@@ -203,14 +186,12 @@ def solve_input_led(vin_v, rin_ohm):
 
 
 def compute_ic_from_if_and_vce(if_ma, vce_v, ctr_nominal_pct=130.0):
-    # Realistic PC817 CTR(IF) bell-shaped efficiency factor (peaks around IF = 5-10 mA)
     if if_ma <= 0.0:
         return 0.0
     eff_shape = 0.78 + 0.24 * np.exp(-((np.log(max(if_ma, 0.2) / 6.5)) ** 2) / 1.8)
     ctr_eff = (ctr_nominal_pct / 100.0) * eff_shape
-    ic_sat_target = ctr_eff * if_ma  # Active region collector current at VCE = 5 V
+    ic_sat_target = ctr_eff * if_ma
 
-    # Output characteristic knee (VCE_sat ~ 0.2 V) + slight Early slope (VA ~ 65 V)
     vce_pos = max(vce_v, 0.0)
     active_factor = np.tanh(vce_pos / 0.22) * (1.0 + (vce_pos - 5.0) / 70.0)
     return float(max(ic_sat_target * active_factor, 0.0))
@@ -219,7 +200,6 @@ def compute_ic_from_if_and_vce(if_ma, vce_v, ctr_nominal_pct=130.0):
 def solve_output_operating_point(vcc_v, rl_ohm, if_ma, ctr_nominal_pct=130.0):
     if vcc_v <= 0.0 or if_ma <= 0.0:
         return float(max(vcc_v, 0.0)), 0.0
-    # Load line: VCE = VCC - IC * RL -> solve via bisection on VCE in [0, VCC]
     lo, hi = 0.0, vcc_v
     for _ in range(45):
         mid = 0.5 * (lo + hi)
@@ -397,17 +377,17 @@ with disp_col:
 
     with tab_manual:
         st.markdown(
-            f"""
+            r"""
             ### Laboratory Write-Up & Working Formula
 
-            * **Components Needed:** Optocoupler (**PC817**), DC power supplies (2 nos: $V_{{IN}}$ and $V_{{CC}}$), current-limiting and load resistors, digital multimeters (voltmeters for $V_F$ and $V_{{CE}}$), milliammeters (2 nos for $I_F$ and $I_C$).
+            * **Components Needed:** Optocoupler (**PC817**), DC power supplies (2 nos: $V_{\text{IN}}$ and $V_{\text{CC}}$), current-limiting and load resistors, digital multimeters (voltmeters for $V_F$ and $V_{CE}$), milliammeters (2 nos for $I_F$ and $I_C$).
 
             * **Construction & Principle:**
               * **Input Side (Pins 1 & 2):** Gallium Arsenide (GaAs) Infrared LED emitting infrared radiation proportional to forward current $I_F$.
               * **Output Side (Pins 3 & 4):** Silicon NPN Phototransistor whose collector current $I_C$ is controlled optically by the incident infrared flux without any electrical connection between input and output circuits.
 
             * **Current Transfer Ratio (CTR):**
-              $$\\text{{CTR}} = \\frac{{I_C}}{{I_F}} \\times 100\\%$$
-              Measured in the **active region** ($V_{{CE}} = 5\\text{{ V}}$), where the output curves are flat and $I_C$ depends primarily on $I_F$.
+              $$\text{CTR} = \frac{I_C}{I_F} \times 100\%$$
+              Measured in the **active region** ($V_{CE} = 5\text{ V}$), where the output curves are flat and $I_C$ depends primarily on $I_F$.
             """
         )
