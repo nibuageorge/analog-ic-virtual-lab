@@ -16,68 +16,77 @@ st.markdown(
 )
 
 # -------------------------------------------------------------------------
-# Helper: Draw Schematics for Both Photodiode Modes
+# Helper: Draw Clean, Explicit-Canvas Schematics for Both Photodiode Modes
 # -------------------------------------------------------------------------
 def draw_photodiode_schematic(mode_key, rf_kohm, vbias_v, vcc):
-    with schemdraw.Drawing(show=False) as d:
-        d.config(unit=2.45, fontsize=8.0)
+    fig, ax = plt.subplots(figsize=(5.6, 3.8))
+    ax.set_aspect("equal")
+    ax.axis("off")
 
-        op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
-        d.add(elm.Line().up().at(op.vd).length(0.32).label(f"+{vcc:.0f}V", loc="top", fontsize=7.5))
-        d.add(elm.Line().down().at(op.vs).length(0.32).label(f"-{vcc:.0f}V", loc="bottom", fontsize=7.5))
+    d = schemdraw.Drawing(canvas=ax, show=False)
+    d.config(unit=2.4, fontsize=8.5)
 
-        # Output terminal Vo
-        d.add(elm.Line().right().at(op.out).length(0.75))
-        fb_tap = d.add(elm.Dot())
-        fb_x, fb_y = fb_tap.center
-        d.add(elm.Line().right().at((fb_x, fb_y)).length(0.85).label("$V_O$", loc="right", fontsize=9.5))
+    # Op-Amp (LM358): Inverting (-) on top, Non-Inverting (+) on bottom
+    op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
+    d.add(elm.Line().up().at(op.vd).length(0.35).label(f"+{vcc:.0f}V", loc="top", fontsize=7.8))
+    d.add(elm.Line().down().at(op.vs).length(0.35).label(f"-{vcc:.0f}V", loc="bottom", fontsize=7.8))
 
-        # Inverting input (-) virtual ground node
-        inv_x, inv_y = op.in1
-        d.add(elm.Line().left().at((inv_x, inv_y)).length(0.85))
-        sum_node = d.add(elm.Dot())
-        sx, sy = sum_node.center
+    # Output terminal Vo
+    d.add(elm.Line().right().at(op.out).length(0.75))
+    fb_tap = d.add(elm.Dot())
+    fb_x, fb_y = fb_tap.center
+    d.add(elm.Line().right().at((fb_x, fb_y)).length(0.85).label("$V_O$", loc="right", fontsize=9.5))
 
-        # Feedback resistor Rf above op-amp
-        top_y = sy + 1.25
-        d.add(elm.Line().up().at((sx, sy)).toy(top_y))
-        d.add(elm.Resistor().right().tox(fb_x).label(f"$R_f$\n{rf_kohm:.0f} k$\\Omega$", loc="top", fontsize=8.2))
-        d.add(elm.Line().down().toy(fb_y))
+    # Inverting input (-) virtual-ground summing node
+    inv_x, inv_y = op.in1
+    d.add(elm.Line().left().at((inv_x, inv_y)).length(0.85))
+    sum_node = d.add(elm.Dot())
+    sx, sy = sum_node.center
 
-        # Non-inverting (+) input grounded
-        noninv_x, noninv_y = op.in2
-        d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.45))
+    # Feedback resistor Rf above op-amp
+    top_y = sy + 1.35
+    d.add(elm.Line().up().at((sx, sy)).toy(top_y))
+    d.add(elm.Resistor().right().tox(fb_x).label(f"$R_f$\n{rf_kohm:.0f} k$\\Omega$", loc="top", fontsize=8.5))
+    d.add(elm.Line().down().toy(fb_y))
+
+    # Non-inverting (+) input connected to Ground
+    noninv_x, noninv_y = op.in2
+    d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.55))
+    d.add(elm.Ground())
+
+    if mode_key == "photovoltaic":
+        # Part I: Photovoltaic (Zero-Bias) Mode
+        # Anode grounded, Cathode connected to inverting (-) virtual ground -> Vo = +Iph * Rf
+        d.add(elm.Line().left().at((sx, sy)).length(1.15))
+        pd_x = d.here[0]
+        gnd_y = sy - 1.65
+        d.add(
+            elm.Photodiode()
+            .up()
+            .at((pd_x, gnd_y))
+            .toy(sy)
+            .label("BPW34\n(Zero-Bias)", loc="left", fontsize=8.2)
+        )
+        d.add(elm.Ground().at((pd_x, gnd_y)))
+    else:
+        # Part II: Photoconductive (Reverse-Bias) Mode
+        # Cathode connected to +Vbias, Anode connected to inverting (-) virtual ground -> Vo = -Iph * Rf
+        d.add(
+            elm.Photodiode()
+            .left()
+            .at((sx, sy))
+            .length(2.1)
+            .label("BPW34\n(Reverse-Bias)", loc="top", fontsize=8.2)
+        )
+        src_x = d.here[0]
+        d.add(elm.Line().down().at((src_x, sy)).length(0.2))
+        d.add(elm.SourceV().down().length(1.25).label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2))
         d.add(elm.Ground())
 
-        if mode_key == "photovoltaic":
-            # Part I: Zero-Bias Photovoltaic Mode
-            # Anode at Ground, Cathode at inverting (-) virtual ground -> Vo = +Iph * Rf
-            d.add(elm.Line().left().at((sx, sy)).length(0.95))
-            pd_x = d.here[0]
-            d.add(
-                elm.Photodiode()
-                .up()
-                .at((pd_x, sy - 1.55))
-                .toy(sy)
-                .label("BPW34\n(Zero Bias)", loc="left", fontsize=8.0)
-            )
-            d.add(elm.Ground().at((pd_x, sy - 1.55)))
-        else:
-            # Part II: Reverse-Bias Photoconductive Mode
-            # Cathode connected to +Vbias, Anode connected to inverting (-) virtual ground -> Vo = -Iph * Rf
-            d.add(
-                elm.Photodiode()
-                .left()
-                .at((sx, sy))
-                .length(2.05)
-                .label("BPW34\n(Reverse Bias)", loc="top", fontsize=8.0)
-            )
-            src_x = d.here[0]
-            d.add(elm.Line().down().at((src_x, sy)).length(0.2))
-            d.add(elm.SourceV().down().length(1.15).label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2))
-            d.add(elm.Ground())
-
-        return d.draw(show=False).fig
+    d.draw(ax=ax, show=False)
+    ax.autoscale_view()
+    plt.tight_layout()
+    return fig
 
 # -------------------------------------------------------------------------
 # Physics Model: BPW34 Silicon PIN Photodiode
@@ -92,16 +101,12 @@ def compute_bpw34_response(mode_key, irradiance_wm2, rf_kohm, vbias_v, vcc):
     i_ph_ua = responsivity_aw * p_opt_uw  # photocurrent in uA
 
     if mode_key == "photovoltaic":
-        # Zero external bias -> negligible dark current, low noise, Vo = +Iph * Rf
         i_dark_ua = 0.0
-        # Slight logarithmic compression at high irradiance when open-circuit voltage approaches ~0.45 V
-        # In TIA mode, virtual ground holds Vd ~ 0 until Rf * Iph approaches Vsat
         i_total_ua = i_ph_ua
         vo_theo = +(i_total_ua * 1e-6) * (rf_kohm * 1e3)
         depletion_width_um = 4.5
         bandwidth_khz = 35.0
     else:
-        # Reverse bias widens depletion layer -> faster speed, higher linearity, small dark current (~2 nA at 5V)
         i_dark_ua = 0.002 * (1.0 + 0.15 * vbias_v)
         i_total_ua = i_ph_ua + i_dark_ua
         vo_theo = -(i_total_ua * 1e-6) * (rf_kohm * 1e3)
@@ -134,6 +139,7 @@ mode_choice = st.radio(
         "Part II: Photoconductive Mode (Reverse Bias, Cathode at +Vbias)",
     ],
     horizontal=True,
+    key="bpw34_mode_selector",
 )
 mode_key = "photovoltaic" if mode_choice.startswith("Part I") else "photoconductive"
 st.divider()
@@ -211,7 +217,7 @@ with disp_col:
         mode_short = "Photovoltaic (Zero-Bias)" if mode_key == "photovoltaic" else "Photoconductive (Reverse-Bias)"
         st.markdown(f"**Circuit Diagram: {mode_short}**")
         fig_sch = draw_photodiode_schematic(mode_key, rf_kohm, vbias_v, vcc)
-        st.pyplot(fig_sch)
+        st.pyplot(fig_sch, clear_figure=True)
         plt.close(fig_sch)
         if mode_key == "photovoltaic":
             st.caption("**Photovoltaic Mode:** $V_R = 0\\text{ V}$, zero dark current ($I_{\\text{dark}} = 0$), $V_O = I_{ph} R_f$.")
@@ -247,7 +253,7 @@ with disp_col:
         )
         ax_pd.legend(loc="best", fontsize=7.6)
         plt.tight_layout()
-        st.pyplot(fig_pd)
+        st.pyplot(fig_pd, clear_figure=True)
         plt.close(fig_pd)
 
     # ---------------------------------------------------------------------
@@ -290,7 +296,7 @@ with disp_col:
         style_cro_axes(ax_c, title="Linearity Comparison: |VO| vs. Incident Light Intensity", xlabel="Light Intensity E (W/m^2)", ylabel="|VO| (V)")
         ax_c.legend(loc="upper left", fontsize=8)
         plt.tight_layout()
-        st.pyplot(fig_c)
+        st.pyplot(fig_c, clear_figure=True)
         plt.close(fig_c)
 
         st.markdown(
