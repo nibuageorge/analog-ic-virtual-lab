@@ -94,7 +94,7 @@ with ctrl_col:
         index=1,
         help="Gayakwad recommends R_F = 10·R_1 to limit DC offset gain while preserving bandwidth."
     )
-    cf_uf = st.slider("Feedback Capacitor $C_F$ (µF)", min_value=0.001, max_value=0.500, value=0.010, step=0.001, format="%.3f")
+    cf_uf = st.slider("Feedback Capacitor $C_F$ (µF)", min_value=0.001, max_value=1.000, value=0.010, step=0.001, format="%.3f")
     vcc = st.slider("Supply Voltage $\pm V_{CC}$ (V)", min_value=5.0, max_value=18.0, value=15.0, step=1.0)
 
 # -------------------------------------------------------------------------
