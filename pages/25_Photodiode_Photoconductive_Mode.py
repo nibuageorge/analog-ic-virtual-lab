@@ -20,56 +20,63 @@ st.markdown(
 # Helper: Draw Photoconductive (Reverse-Bias) Transimpedance Schematic
 # -------------------------------------------------------------------------
 def draw_photoconductive_schematic(rf_kohm, vbias_v, vcc):
-    d = schemdraw.Drawing(show=False)
-    d.config(unit=2.45, fontsize=8.2)
+    with schemdraw.Drawing(show=False, bgcolor="white") as d:
+        d.config(unit=2.5, fontsize=8.5, color="#0f172a", lw=1.6)
 
-    # Op-Amp (LM358): Inverting (-) on top, Non-Inverting (+) on bottom
-    op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
-    d.add(elm.Line().up().at(op.vd).length(0.35).label(f"+{vcc:.0f}V", loc="top", fontsize=7.8))
-    d.add(elm.Line().down().at(op.vs).length(0.35).label(f"-{vcc:.0f}V", loc="bottom", fontsize=7.8))
+        # Op-Amp (LM358): Inverting (-) at top-left, Non-Inverting (+) at bottom-left
+        op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
+        d.add(elm.Line().at(op.vd).to((op.vd[0], op.vd[1] + 0.35)).label(f"+{vcc:.0f}V", loc="top", fontsize=7.8))
+        d.add(elm.Line().at(op.vs).to((op.vs[0], op.vs[1] - 0.35)).label(f"-{vcc:.0f}V", loc="bottom", fontsize=7.8))
 
-    # Output terminal Vo
-    d.add(elm.Line().right().at(op.out).length(0.75))
-    fb_tap = d.add(elm.Dot())
-    fb_x, fb_y = fb_tap.center
-    d.add(elm.Line().right().at((fb_x, fb_y)).length(0.85).label("$V_O$", loc="right", fontsize=9.5))
+        # Output node Vo
+        out_x, out_y = op.out
+        fb_x = out_x + 0.85
+        d.add(elm.Line().at((out_x, out_y)).to((fb_x, out_y)))
+        d.add(elm.Dot().at((fb_x, out_y)))
+        d.add(elm.Line().at((fb_x, out_y)).to((fb_x + 0.85, out_y)).label("$V_O$", loc="right", fontsize=9.5))
 
-    # Inverting input (-) virtual-ground summing node
-    inv_x, inv_y = op.in1
-    d.add(elm.Line().left().at((inv_x, inv_y)).length(0.85))
-    sum_node = d.add(elm.Dot())
-    sx, sy = sum_node.center
+        # Inverting (-) virtual ground node
+        inv_x, inv_y = op.in1
+        sx = inv_x - 0.95
+        sy = inv_y
+        d.add(elm.Line().at((inv_x, inv_y)).to((sx, sy)))
+        d.add(elm.Dot().at((sx, sy)))
 
-    # Feedback resistor Rf above op-amp
-    top_y = sy + 1.35
-    d.add(elm.Line().up().at((sx, sy)).toy(top_y))
-    d.add(elm.Resistor().right().tox(fb_x).label(f"$R_f$\n{rf_kohm:.0f} k$\\Omega$", loc="top", fontsize=8.5))
-    d.add(elm.Line().down().toy(fb_y))
+        # Feedback Resistor Rf above Op-Amp
+        top_y = sy + 1.35
+        d.add(elm.Line().at((sx, sy)).to((sx, top_y)))
+        d.add(elm.Resistor().at((sx, top_y)).to((fb_x, top_y)).label(f"$R_f$\n{rf_kohm:.0f} k$\\Omega$", loc="top", fontsize=8.5))
+        d.add(elm.Line().at((fb_x, top_y)).to((fb_x, out_y)))
 
-    # Non-inverting (+) input connected directly to Ground
-    noninv_x, noninv_y = op.in2
-    d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.55))
-    d.add(elm.Ground())
+        # Non-Inverting (+) input connected directly to Ground
+        noninv_x, noninv_y = op.in2
+        gnd_plus_x = noninv_x - 0.55
+        d.add(elm.Line().at((noninv_x, noninv_y)).to((gnd_plus_x, noninv_y)))
+        d.add(elm.Ground().at((gnd_plus_x, noninv_y)))
 
-    # BPW34 Photodiode in Reverse-Bias Photoconductive Mode
-    # Cathode at +Vbias, Anode at inverting (-) virtual ground -> Vo = -Iph * Rf
-    d.add(
-        elm.Photodiode()
-        .left()
-        .at((sx, sy))
-        .length(2.15)
-        .label("BPW34\n(Reverse-Bias)", loc="top", fontsize=8.2)
-    )
-    src_x = d.here[0]
-    d.add(elm.Line().down().at((src_x, sy)).length(0.25))
-    d.add(elm.SourceV().down().length(1.25).label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2))
-    d.add(elm.Ground())
+        # BPW34 Photodiode in Reverse-Bias Photoconductive Mode:
+        # Cathode at +Vbias (left), Anode at virtual ground (right)
+        src_x = sx - 2.25
+        d.add(
+            elm.Photodiode()
+            .at((src_x, sy))
+            .to((sx, sy))
+            .label("BPW34\n(Reverse-Bias)", loc="top", fontsize=8.2)
+        )
+        d.add(elm.Line().at((src_x, sy)).to((src_x, sy - 0.25)))
+        d.add(
+            elm.SourceV()
+            .at((src_x, sy - 0.25))
+            .to((src_x, sy - 1.55))
+            .label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2)
+        )
+        d.add(elm.Ground().at((src_x, sy - 1.55)))
 
-    buf = io.BytesIO()
-    d.save(buf, dpi=220)
-    buf.seek(0)
-    plt.close("all")
-    return buf
+        buf = io.BytesIO()
+        d.save(buf, dpi=220, transparent=False)
+        buf.seek(0)
+        plt.close("all")
+        return buf
 
 # -------------------------------------------------------------------------
 # Physics Model: BPW34 in Photoconductive (Reverse-Bias) Mode
