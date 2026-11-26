@@ -115,8 +115,8 @@ with ctrl_col:
     st.subheader("2. Transimpedance Parameters")
     rf_kohm = st.slider(
         "Feedback Resistor $R_f$ (kOhm)",
-        min_value=10.0,
-        max_value=1000.0,
+        min_value=1.0,
+        max_value=500.0,
         value=100.0,
         step=10.0,
         help="Standard feedback resistor range: 10 kOhm to 1 MOhm."
