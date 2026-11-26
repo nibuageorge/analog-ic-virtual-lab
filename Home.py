@@ -36,11 +36,12 @@ OPAMP_EXPERIMENTS = [
     ("pages/14_Current_to_Voltage_Converter.py", "14. Current-to-Voltage Converter (µA741)", "🔌"),
     ("pages/15_Voltage_to_Current_Converter.py", "15. Voltage-to-Current Converter (µA741)", "🔋"),
     ("pages/16_Differential_Amplifier_CMRR.py", "16. Differential Amplifier & CMRR Measurement (µA741)", "⚖️"),
+    ("pages/17_OpAmp_Summing_Amplifier.py", "17. Op-Amp Summing Amplifier (Three Inputs, µA741)", "➕"),
 ]
 
 TIMER_555_EXPERIMENTS = [
-    ("pages/17_555_Astable_Multivibrator.py", "17. Astable Multivibrator using IC 555 Timer", "⏲️"),
-    ("pages/18_555_Monostable_Multivibrator.py", "18. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
+    ("pages/18_555_Astable_Multivibrator.py", "18. Astable Multivibrator using IC 555 Timer", "⏲️"),
+    ("pages/19_555_Monostable_Multivibrator.py", "19. Monostable Multivibrator using IC 555 Timer", "1️⃣"),
 
 ]
 
