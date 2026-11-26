@@ -52,6 +52,8 @@ OPTOELECTRONICS_EXPERIMENTS = [
     ("pages/22_LED_Constant_Current_Driver.py", "22. Constant Current LED Driver using Op-Amp & Transistor", "💡"),
     ("pages/23_LDR_Transimpedance_Amplifier.py", "23. Photoconductor (LDR) Transimpedance Amplifier", "🔆"),
     ("pages/24_Photodiode_Photovoltaic_and_Photoconductive.py", "24. Photodiode: Photovoltaic & Photoconductive Modes", "📡"),
+    ("pages/24_Photodiode_Photovoltaic_Mode.py", "24. Photodiode in Photovoltaic (Zero-Bias) Mode", "📡"),
+    ("pages/25_Photodiode_Photoconductive_Mode.py", "25. Photodiode in Photoconductive (Reverse-Bias) Mode", "🔬"),
 ]
 
 def render_experiment_list(exp_list):
