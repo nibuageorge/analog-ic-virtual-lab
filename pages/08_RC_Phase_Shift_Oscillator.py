@@ -163,7 +163,7 @@ with ctrl_col:
     st.subheader("1. 3-Stage RC Ladder Network ($R, C$)")
     r_kohm = st.slider(
         "Ladder Resistor $R$ (kΩ)",
-        min_value=1.0,
+        min_value=0.10,
         max_value=50.0,
         value=3.3,
         step=0.1,
@@ -172,9 +172,9 @@ with ctrl_col:
     c_uf = st.slider(
         "Ladder Capacitor $C$ (µF)",
         min_value=0.005,
-        max_value=0.500,
+        max_value=1.000,
         value=0.100,
-        step=0.005,
+        step=0.001,
         format="%.3f",
         help="Gayakwad Fig. 7-18 default: C = 0.1 µF (gives fo ≈ 197 Hz, T ≈ 5 ms)."
     )
@@ -182,16 +182,16 @@ with ctrl_col:
     st.subheader("2. Amplifier Gain & Zener Clamp ($R_1, R_F, D_1/D_2$)")
     r1_kohm = st.slider(
         "Input Resistor $R_1$ (kΩ)",
-        min_value=5.0,
+        min_value=0.1,
         max_value=100.0,
         value=33.0,
-        step=1.0,
+        step=0.1,
         help="Gayakwad recommends R1 >= 10·R (default 33 kΩ) to prevent loading the RC network."
     )
     rf_kohm = st.slider(
         "Feedback Potentiometer $R_F$ (kΩ)",
-        min_value=100.0,
-        max_value=1500.0,
+        min_value=0.1,
+        max_value=5000.0,
         value=1000.0,
         step=10.0,
         help="Must satisfy RF >= 29·R1 (for R1 = 33 kΩ, 29·R1 = 957 kΩ; default 1 MΩ pot)."
