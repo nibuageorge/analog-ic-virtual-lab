@@ -137,8 +137,8 @@ with ctrl_col:
     irrad_wm2 = st.slider(
         "Incident Light Intensity $E$ (W/m$^2$)",
         min_value=0.0,
-        max_value=200.0,
-        value=50.0,
+        max_value=100.0,
+        value=10.0,
         step=5.0,
         help="0 W/m^2 corresponds to complete darkness; 200 W/m^2 corresponds to bright illumination."
     )
