@@ -208,7 +208,7 @@ with disp_col:
     schem_col, cro_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        fig_label = {"inverter": "Fig. 3-2", "noninverter": "Fig. 3-7", "buffer": "Fig. 3-9"}[mode_key]
+        fig_label = {"inverter": ".", "noninverter": ".", "buffer": "."}[mode_key]
         st.markdown(f"**Circuit Diagram (*Gayakwad {fig_label}*)**")
         fig_sch = draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc)
         st.pyplot(fig_sch)
