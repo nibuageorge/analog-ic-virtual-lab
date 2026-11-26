@@ -87,7 +87,7 @@ with ctrl_col:
     )
 
     st.subheader("2. Circuit Components (Gayakwad)")
-    r1_kohm = st.slider("Input Resistor $R_1$ (kΩ)", min_value=1.0, max_value=100.0, value=10.0, step=1.0)
+    r1_kohm = st.slider("Input Resistor $R_1$ (kΩ)", min_value=1.0, max_value=1000.0, value=10.0, step=1.0)
     rf_ratio = st.selectbox(
         "Feedback Resistor Ratio ($R_F / R_1$)",
         options=[5, 10, 20, 50],
@@ -265,7 +265,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Equations (*R. A. Gayakwad, Section 6.13*)
+            ### Theory & Design Equations (R. A. Gayakwad)
 
             1. **Ideal vs. Practical Integrator:**
                An ideal integrator ($v_o = -\\frac{{1}}{{R_1 C_F}} \\int_0^t v_{{in}}\\,dt + v_o(0)$) has infinite DC gain ($f = 0$), which causes any small input offset voltage $V_{{io}}$ to drive the op-amp into saturation. Adding a feedback resistor **$R_F$** across **$C_F$** limits the low-frequency gain to $-R_F / R_1$.
