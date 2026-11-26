@@ -149,7 +149,7 @@ with ctrl_col:
     st.subheader("1. Feedback Network ($R, C$)")
     r_kohm = st.slider(
         "Wien Resistor $R$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=3.3,
         step=0.1,
@@ -158,9 +158,9 @@ with ctrl_col:
     c_uf = st.slider(
         "Wien Capacitor $C$ (µF)",
         min_value=0.005,
-        max_value=0.200,
-        value=0.050,
-        step=0.005,
+        max_value=1.000,
+        value=0.047,
+        step=0.001,
         format="%.3f",
         help="Default textbook value: 0.05 µF."
     )
@@ -168,7 +168,7 @@ with ctrl_col:
     st.subheader("2. Amplifier Gain Controls ($R_1, R_F$)")
     r1_kohm = st.slider(
         "Input Resistor $R_1$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=12.0,
         step=0.5,
@@ -176,7 +176,7 @@ with ctrl_col:
     )
     rf_kohm = st.slider(
         "Feedback Potentiometer $R_F$ (50-kΩ pot, set in kΩ)",
-        min_value=5.0,
+        min_value=0.1,
         max_value=50.0,
         value=24.0,
         step=0.5,
