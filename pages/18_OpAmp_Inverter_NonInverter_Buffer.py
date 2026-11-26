@@ -67,8 +67,16 @@ def draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc):
             d.add(elm.Ground())
 
         elif mode_key == "noninverter":
-            # Gayakwad Fig. 3-7: Non-Inverting Amplifier
-            d.add(elm.Line().left().at((inv_x, inv_y)).length(0.75))
+            # Gayakwad Fig. 3-7: Non-Inverting Amplifier (Zero overlap between vin and R1)
+            # 1. AC source vin connects directly to non-inverting (+) input on inner column
+            d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.85))
+            vin_x = d.here[0]
+            d.add(elm.Line().down().at((vin_x, noninv_y)).length(0.2))
+            d.add(elm.SourceSin().down().length(1.05).label('$v_{in}$', loc='right', fontsize=9))
+            d.add(elm.Ground())
+
+            # 2. Inverting (-) feedback node and R1 routed cleanly on outer column to the left of vin
+            d.add(elm.Line().left().at((inv_x, inv_y)).length(0.65))
             fb_node = d.add(elm.Dot())
             sx, sy = fb_node.center
 
@@ -78,17 +86,10 @@ def draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc):
             d.add(elm.Resistor().right().tox(fb_x).label(f'$R_F$\n{rf_kohm:.1f} k$\\Omega$', loc='top', fontsize=8.2))
             d.add(elm.Line().down().toy(fb_y))
 
-            # Resistor R1 from inverting node to Ground
-            d.add(elm.Line().left().at((sx, sy)).length(0.95))
-            r1_top_x = d.here[0]
-            d.add(elm.Resistor().down().at((r1_top_x, sy)).length(1.35).label(f'$R_1$\n{r1_kohm:.1f} k$\\Omega$', loc='left', fontsize=8.2))
-            d.add(elm.Ground())
-
-            # AC source vin directly at non-inverting (+) input
-            d.add(elm.Line().left().at((noninv_x, noninv_y)).length(2.25))
-            src_x = d.here[0]
-            d.add(elm.Line().down().at((src_x, noninv_y)).length(0.2))
-            d.add(elm.SourceSin().down().length(1.05).label('$v_{in}$', loc='left', fontsize=9))
+            # Extend horizontal wire left past vin_x before dropping R1 to ground
+            r1_x = vin_x - 1.15
+            d.add(elm.Line().left().at((sx, sy)).tox(r1_x))
+            d.add(elm.Resistor().down().at((r1_x, sy)).length(1.85).label(f'$R_1$\n{r1_kohm:.1f} k$\\Omega$', loc='left', fontsize=8.2))
             d.add(elm.Ground())
 
         else:
@@ -101,14 +102,13 @@ def draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc):
             d.add(elm.Line().down().toy(fb_y))
 
             # AC source vin directly at non-inverting (+) input
-            d.add(elm.Line().left().at((noninv_x, noninv_y)).length(1.85))
+            d.add(elm.Line().left().at((noninv_x, noninv_y)).length(1.45))
             src_x = d.here[0]
             d.add(elm.Line().down().at((src_x, noninv_y)).length(0.2))
             d.add(elm.SourceSin().down().length(1.1).label('$v_{in}$', loc='left', fontsize=9))
             d.add(elm.Ground())
 
         return d.draw(show=False).fig
-
 # -------------------------------------------------------------------------
 # Main Layout: Left Panel (Controls) | Right Panel (Circuit + CRO Plots)
 # -------------------------------------------------------------------------
