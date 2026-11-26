@@ -11,8 +11,7 @@ render_sidebar_header()
 st.title("Experiment 18: Op-Amp Inverter, Non-Inverter & Voltage Follower ($\\mu$A741)")
 st.markdown(
     "Design and construct **Inverting Amplifier**, **Non-Inverting Amplifier**, and **Voltage Follower (Buffer)** "
-    "circuits using **$\\mu$A741** for **AC input voltages**, verify voltage gain ($A_F$) and phase relationship "
-    "on the CRO, and compare all three configurations (*Gayakwad, Sections 3-2, 3-3 & 3-3-3, Figs. 3-2, 3-7 & 3-9*)."
+    "circuits using **$\\mu$A741** for **AC input voltages** (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -261,7 +260,7 @@ with disp_col:
     tab_cmp, tab_obs, tab_theory = st.tabs([
         "3-Mode Simultaneous Overlay Plot",
         "Observation Tables (Inverter, Non-Inverter & Buffer)",
-        "Theory & Summary Table (Gayakwad Ch. 3)"
+        "Theory & Summary Table (Gayakwad)"
     ])
 
     with tab_cmp:
@@ -316,7 +315,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Comparison Summary (*R. A. Gayakwad, Chapter 3*)
+            ### Comparison Summary (R. A. Gayakwad)
 
             | Parameter | Inverting Amplifier (*Fig. 3-2*) | Non-Inverting Amplifier (*Fig. 3-7*) | Voltage Follower / Buffer (*Fig. 3-9*) |
             | :--- | :--- | :--- | :--- |
