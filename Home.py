@@ -49,6 +49,7 @@ TIMER_555_EXPERIMENTS = [
 # Part C: Optoelectronics Experiments
 OPTOELECTRONICS_EXPERIMENTS = [
     ("pages/21_Solar_Cell_IV_Characteristics.py", "21. Solar Cell – Efficiency and Fill Factor", "☀️"),
+    ("pages/22_LED_Constant_Current_Driver.py", "22. Constant Current LED Driver using Op-Amp & Transistor", "💡"),
 ]
 
 def render_experiment_list(exp_list):
