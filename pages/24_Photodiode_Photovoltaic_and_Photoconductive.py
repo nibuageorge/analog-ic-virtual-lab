@@ -19,75 +19,66 @@ st.markdown(
 # Helper: Draw Clean, Explicit-Canvas Schematics for Both Photodiode Modes
 # -------------------------------------------------------------------------
 def draw_photodiode_schematic(mode_key, rf_kohm, vbias_v, vcc):
-    fig, ax = plt.subplots(figsize=(5.6, 3.8))
-    ax.set_aspect("equal")
-    ax.axis("off")
+    with schemdraw.Drawing(show=False) as d:
+        d.config(unit=2.45, fontsize=8.2)
 
-    d = schemdraw.Drawing(canvas=ax, show=False)
-    d.config(unit=2.4, fontsize=8.5)
+        # Op-Amp (LM358): Inverting (-) on top, Non-Inverting (+) on bottom
+        op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
+        d.add(elm.Line().up().at(op.vd).length(0.35).label(f"+{vcc:.0f}V", loc="top", fontsize=7.8))
+        d.add(elm.Line().down().at(op.vs).length(0.35).label(f"-{vcc:.0f}V", loc="bottom", fontsize=7.8))
 
-    # Op-Amp (LM358): Inverting (-) on top, Non-Inverting (+) on bottom
-    op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
-    d.add(elm.Line().up().at(op.vd).length(0.35).label(f"+{vcc:.0f}V", loc="top", fontsize=7.8))
-    d.add(elm.Line().down().at(op.vs).length(0.35).label(f"-{vcc:.0f}V", loc="bottom", fontsize=7.8))
+        # Output terminal Vo
+        d.add(elm.Line().right().at(op.out).length(0.75))
+        fb_tap = d.add(elm.Dot())
+        fb_x, fb_y = fb_tap.center
+        d.add(elm.Line().right().at((fb_x, fb_y)).length(0.85).label("$V_O$", loc="right", fontsize=9.5))
 
-    # Output terminal Vo
-    d.add(elm.Line().right().at(op.out).length(0.75))
-    fb_tap = d.add(elm.Dot())
-    fb_x, fb_y = fb_tap.center
-    d.add(elm.Line().right().at((fb_x, fb_y)).length(0.85).label("$V_O$", loc="right", fontsize=9.5))
+        # Inverting input (-) virtual-ground summing node
+        inv_x, inv_y = op.in1
+        d.add(elm.Line().left().at((inv_x, inv_y)).length(0.85))
+        sum_node = d.add(elm.Dot())
+        sx, sy = sum_node.center
 
-    # Inverting input (-) virtual-ground summing node
-    inv_x, inv_y = op.in1
-    d.add(elm.Line().left().at((inv_x, inv_y)).length(0.85))
-    sum_node = d.add(elm.Dot())
-    sx, sy = sum_node.center
+        # Feedback resistor Rf above op-amp
+        top_y = sy + 1.35
+        d.add(elm.Line().up().at((sx, sy)).toy(top_y))
+        d.add(elm.Resistor().right().tox(fb_x).label(f"$R_f$\n{rf_kohm:.0f} k$\\Omega$", loc="top", fontsize=8.5))
+        d.add(elm.Line().down().toy(fb_y))
 
-    # Feedback resistor Rf above op-amp
-    top_y = sy + 1.35
-    d.add(elm.Line().up().at((sx, sy)).toy(top_y))
-    d.add(elm.Resistor().right().tox(fb_x).label(f"$R_f$\n{rf_kohm:.0f} k$\\Omega$", loc="top", fontsize=8.5))
-    d.add(elm.Line().down().toy(fb_y))
-
-    # Non-inverting (+) input connected to Ground
-    noninv_x, noninv_y = op.in2
-    d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.55))
-    d.add(elm.Ground())
-
-    if mode_key == "photovoltaic":
-        # Part I: Photovoltaic (Zero-Bias) Mode
-        # Anode grounded, Cathode connected to inverting (-) virtual ground -> Vo = +Iph * Rf
-        d.add(elm.Line().left().at((sx, sy)).length(1.15))
-        pd_x = d.here[0]
-        gnd_y = sy - 1.65
-        d.add(
-            elm.Photodiode()
-            .up()
-            .at((pd_x, gnd_y))
-            .toy(sy)
-            .label("BPW34\n(Zero-Bias)", loc="left", fontsize=8.2)
-        )
-        d.add(elm.Ground().at((pd_x, gnd_y)))
-    else:
-        # Part II: Photoconductive (Reverse-Bias) Mode
-        # Cathode connected to +Vbias, Anode connected to inverting (-) virtual ground -> Vo = -Iph * Rf
-        d.add(
-            elm.Photodiode()
-            .left()
-            .at((sx, sy))
-            .length(2.1)
-            .label("BPW34\n(Reverse-Bias)", loc="top", fontsize=8.2)
-        )
-        src_x = d.here[0]
-        d.add(elm.Line().down().at((src_x, sy)).length(0.2))
-        d.add(elm.SourceV().down().length(1.25).label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2))
+        # Non-inverting (+) input connected to Ground
+        noninv_x, noninv_y = op.in2
+        d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.55))
         d.add(elm.Ground())
 
-    d.draw(ax=ax, show=False)
-    ax.autoscale_view()
-    plt.tight_layout()
-    return fig
+        if mode_key == "photovoltaic":
+            # Part I: Photovoltaic (Zero-Bias) Mode
+            # Anode at Ground, Cathode connected to inverting (-) virtual ground -> Vo = +Iph * Rf
+            pd_x = sx - 1.15
+            gnd_y = sy - 1.75
+            d.add(elm.Line().left().at((sx, sy)).to((pd_x, sy)))
+            d.add(
+                elm.Photodiode()
+                .at((pd_x, gnd_y))
+                .to((pd_x, sy))
+                .label("BPW34\n(Zero-Bias)", loc="left", fontsize=8.2)
+            )
+            d.add(elm.Ground().at((pd_x, gnd_y)))
+        else:
+            # Part II: Photoconductive (Reverse-Bias) Mode
+            # Cathode connected to +Vbias, Anode connected to inverting (-) virtual ground -> Vo = -Iph * Rf
+            src_x = sx - 2.15
+            d.add(
+                elm.Photodiode()
+                .at((sx, sy))
+                .to((src_x, sy))
+                .label("BPW34\n(Reverse-Bias)", loc="top", fontsize=8.2)
+            )
+            d.add(elm.Line().down().at((src_x, sy)).length(0.2))
+            d.add(elm.SourceV().down().length(1.25).label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2))
+            d.add(elm.Ground())
 
+        fig = d.draw(show=False).fig
+        return fig
 # -------------------------------------------------------------------------
 # Physics Model: BPW34 Silicon PIN Photodiode
 # Active area A = 7.5 mm^2 = 0.075 cm^2; Peak Responsivity R_lambda ~ 0.62 A/W
