@@ -156,8 +156,8 @@ with ctrl_col:
         "Feedback Resistor $R_f$ (kOhm)",
         min_value=1.0,
         max_value=100.0,
-        value=220.0,
-        step=20.0,
+        value=10.0,
+        step=5.0,
         help="Standard feedback resistor range for photoconductive mode: 100 kOhm to 1 MOhm."
     )
     vcc = st.slider("Dual Power Supply $\\pm V$ (V)", 9.0, 15.0, 12.0, 1.0)
