@@ -146,25 +146,25 @@ with ctrl_col:
     st.subheader("1. Feedback Resistors ($R_1, R_2, R_3$)")
     r1_kohm = st.slider(
         "Input Resistor $R_1$ (kΩ)",
-        min_value=0.50,
+        min_value=0.10,
         max_value=50.00,
-        step=0.05,
+        step=0.1,
         key="nbpf_r1",
         help="Controls center gain AF = R3 / [R1·(1 + C2/C1)] and center frequency fC."
     )
     r2_kohm = st.slider(
         "Shunt Resistor $R_2$ (kΩ)",
-        min_value=0.50,
+        min_value=0.10,
         max_value=50.00,
-        step=0.05,
+        step=0.1,
         key="nbpf_r2",
         help="Tunes center frequency fC without changing gain AF or bandwidth BW."
     )
     r3_kohm = st.slider(
         "Feedback Resistor $R_3$ (kΩ)",
-        min_value=5.0,
+        min_value=0.1,
         max_value=300.0,
-        step=0.5,
+        step=0.1,
         key="nbpf_r3",
         help="Controls bandwidth BW, gain AF, and offset compensation on (+) pin."
     )
@@ -173,8 +173,8 @@ with ctrl_col:
     c1_uf = st.slider(
         "Series Capacitor $C_1$ (µF)",
         min_value=0.001,
-        max_value=0.100,
-        step=0.001,
+        max_value=1.000,
+        step=0.01,
         format="%.3f",
         key="nbpf_c1",
         help="Default textbook value: 0.010 µF."
@@ -182,8 +182,8 @@ with ctrl_col:
     c2_uf = st.slider(
         "Outer Feedback Capacitor $C_2$ (µF)",
         min_value=0.001,
-        max_value=0.100,
-        step=0.001,
+        max_value=1.000,
+        step=0.01,
         format="%.3f",
         key="nbpf_c2",
         help="Default textbook value: 0.010 µF (independently variable)."
