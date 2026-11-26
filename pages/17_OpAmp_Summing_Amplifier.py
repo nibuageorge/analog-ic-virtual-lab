@@ -10,9 +10,8 @@ render_sidebar_header()
 
 st.title("Experiment 17: Three-Input Op-Amp Summing Amplifier ($\\mu$A741)")
 st.markdown(
-    "Design and construct a **Three-Input Inverting Summing Amplifier** using **$\\mu$A741**, "
-    "verify **Adder**, **Scaling (Weighted Summer)**, and **Averaging** operations for DC and AC inputs, "
-    "and observe the summed output waveform on the CRO (*Gayakwad, Section 6-2, Figure 6-1, Eqs. 6-1 to 6-4*)."
+    "Design and construct an Inverting Summing Amplifier** using **$\\mu$A741**, "
+    " (Ref. Gayakwad)."
 )
 
 # -------------------------------------------------------------------------
@@ -162,7 +161,7 @@ with disp_col:
     schem_col, cro_col = st.columns([1.08, 1.42], gap="medium")
 
     with schem_col:
-        st.markdown("**Circuit Diagram (*Gayakwad Fig. 6-1*)**")
+        st.markdown("**Circuit Diagram (Gayakwad)**")
         fig_sch = draw_summing_amp_schematic(ra_kohm, rb_kohm, rc_kohm, rf_kohm, rom_kohm, rl_kohm, vcc)
         st.pyplot(fig_sch)
         plt.close(fig_sch)
@@ -219,7 +218,7 @@ with disp_col:
     # ---------------------------------------------------------------------
     tab_obs, tab_theory = st.tabs([
         "Observation Table (DC & AC Summing Verification)",
-        "Theory & Design Equations (Gayakwad Sec. 6-2)"
+        "Theory & Design Equations (Gayakwad)"
     ])
 
     with tab_obs:
@@ -253,7 +252,7 @@ with disp_col:
     with tab_theory:
         st.markdown(
             f"""
-            ### Theory & Design Equations (*R. A. Gayakwad, Section 6-2, Figure 6-1, p. 207*)
+            ### Theory & Design Equations (R. A. Gayakwad)
 
             1. **Virtual Ground & KCL at the Inverting Summing Node:**
                * Because the non-inverting input (`+`) is referenced to ground through bias-compensation resistor $R_{{OM}}$ and open-loop gain $A_{{OL}} \\to \\infty$, the inverting input (`-`) acts as a **virtual ground** ($V_- \\cong 0\\text{{ V}}$) with zero input current ($I_B \\cong 0$).
