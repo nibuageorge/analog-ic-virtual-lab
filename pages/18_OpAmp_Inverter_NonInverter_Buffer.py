@@ -42,7 +42,7 @@ def draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc):
         noninv_x, noninv_y = op.in2
 
         if mode_key == "inverter":
-            # Gayakwad Fig. 3-2: Inverting Amplifier
+            # Gayakwad: Inverting Amplifier
             d.add(elm.Line().left().at((inv_x, inv_y)).length(0.75))
             sum_node = d.add(elm.Dot())
             sx, sy = sum_node.center
@@ -66,7 +66,7 @@ def draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc):
             d.add(elm.Ground())
 
         elif mode_key == "noninverter":
-            # Gayakwad Fig. 3-7: Non-Inverting Amplifier (Zero overlap between vin and R1)
+            # Gayakwad: Non-Inverting Amplifier (Zero overlap between vin and R1)
             # 1. AC source vin connects directly to non-inverting (+) input on inner column
             d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.85))
             vin_x = d.here[0]
@@ -92,7 +92,7 @@ def draw_amp_mode_schematic(mode_key, r1_kohm, rf_kohm, rom_kohm, rl_kohm, vcc):
             d.add(elm.Ground())
 
         else:
-            # Gayakwad Fig. 3-9: Voltage Follower (Unity-Gain Buffer, RF = 0, R1 = inf)
+            # Gayakwad: Voltage Follower (Unity-Gain Buffer, RF = 0, R1 = inf)
             d.add(elm.Line().left().at((inv_x, inv_y)).length(0.75))
             sx, sy = d.here
             top_y = sy + 1.25
