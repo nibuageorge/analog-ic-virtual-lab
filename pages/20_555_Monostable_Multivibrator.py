@@ -161,7 +161,7 @@ with ctrl_col:
     st.subheader("1. Monostable Timing ($R_A, C$)")
     ra_kohm = st.slider(
         "Timing Resistor $R_A$ (kOhm)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=10.0,
         step=0.1,
