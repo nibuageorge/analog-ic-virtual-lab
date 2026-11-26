@@ -153,7 +153,7 @@ with ctrl_col:
     st.subheader("1. Integrator & Duty Cycle Adjust")
     r1_kohm = st.slider(
         "Integrator Resistor $R_1$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=10.0,
         step=0.5,
@@ -162,18 +162,18 @@ with ctrl_col:
     c1_uf = st.slider(
         "Integrator Capacitor $C_1$ (µF)",
         min_value=0.005,
-        max_value=0.500,
-        value=0.050,
-        step=0.005,
+        max_value=1.000,
+        value=0.047,
+        step=0.001,
         format="%.3f",
         help="Default textbook value: 0.05 µF."
     )
     r4_kohm = st.slider(
         "Duty-Cycle Potentiometer $R_4$ (kΩ)",
-        min_value=5.0,
+        min_value=0.1,
         max_value=100.0,
         value=20.0,
-        step=5.0,
+        step=0.1,
         help="Default textbook value: 20 kΩ connected between +VCC and -VEE."
     )
     wiper_pct = st.slider(
@@ -181,7 +181,7 @@ with ctrl_col:
         min_value=-85,
         max_value=85,
         value=-35,
-        step=5,
+        step=1,
         help="0% = symmetric triangular wave. Moving toward -85% or +85% creates a sawtooth wave."
     )
 
