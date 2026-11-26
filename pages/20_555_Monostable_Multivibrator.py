@@ -164,7 +164,7 @@ with ctrl_col:
         min_value=1.0,
         max_value=100.0,
         value=10.0,
-        step=0.5,
+        step=0.1,
         help="Sets output pulse width tp = 1.1 * RA * C (default 10 kOhm with 0.1 uF -> tp = 1.10 ms)."
     )
     c_uf = st.slider(
