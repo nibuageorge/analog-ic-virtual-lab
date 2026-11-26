@@ -46,6 +46,8 @@ TIMER_555_EXPERIMENTS = [
 
 ]
 
+OPTOELECTRONICS_EXPERIMENTS = [
+    ("pages/21_Solar_Cell_IV_Characteristics.py", "21. Solar Cell I-V & P-V Characteristics", "☀️"),
 def render_experiment_list(exp_list):
     for filepath, label, icon in exp_list:
         if os.path.exists(filepath):
