@@ -95,7 +95,7 @@ with ctrl_col:
     c_uf = st.slider(
         "Filter Capacitor $C$ (µF)",
         min_value=0.001,
-        max_value=0.200,
+        max_value=1.000,
         value=0.010,
         step=0.001,
         format="%.3f",
@@ -105,18 +105,18 @@ with ctrl_col:
     st.subheader("2. Passband Gain Network ($R_1, R_F, R_L$)")
     r1_kohm = st.slider(
         "Input Resistor $R_1$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
-        step=0.5,
+        step=0.1,
         help="Gayakwad Fig. 7-5(a) default: 10 kΩ."
     )
     rf_kohm = st.slider(
         "Feedback Resistor $R_F$ (kΩ)",
-        min_value=0.0,
+        min_value=0.1,
         max_value=100.0,
         value=10.0,
-        step=0.5,
+        step=0.1,
         help="Passband gain AF = 1 + RF / R1 (default 10 kΩ -> AF = 2.00 or +6.02 dB)."
     )
     rl_kohm = st.slider(
