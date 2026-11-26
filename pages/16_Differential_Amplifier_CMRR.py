@@ -81,9 +81,9 @@ ctrl_col, disp_col = st.columns([1.0, 2.3], gap="large")
 
 with ctrl_col:
     st.subheader("1. Circuit Resistors ($R_1 = R_2, R_F = R_3$)")
-    r1_kohm = st.slider("Input Resistors $R_1 = R_2$ (kOhm)", 1.0, 50.0, 10.0, 1.0)
-    rf_kohm = st.slider("Feedback & Ground Resistors $R_F = R_3$ (kOhm)", 10.0, 200.0, 100.0, 5.0)
-    rl_kohm = st.slider("Load Resistor $R_L$ (kOhm)", 1.0, 50.0, 10.0, 1.0)
+    r1_kohm = st.slider("Input Resistors $R_1 = R_2$ (kOhm)", 0.1, 50.0, 10.0, 0.1)
+    rf_kohm = st.slider("Feedback & Ground Resistors $R_F = R_3$ (kOhm)", 0.10, 200.0, 100.0, 0.1)
+    rl_kohm = st.slider("Load Resistor $R_L$ (kOhm)", 0.10, 50.0, 10.0, 0.1)
 
     st.subheader("2. Test Mode & Input Voltages")
     op_mode = st.radio(
