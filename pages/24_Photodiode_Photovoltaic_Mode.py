@@ -106,8 +106,8 @@ with ctrl_col:
     irrad_wm2 = st.slider(
         "Incident Light Intensity $E$ (W/m$^2$)",
         min_value=0.0,
-        max_value=200.0,
-        value=50.0,
+        max_value=100.0,
+        value=10.0,
         step=5.0,
         help="0 W/m^2 corresponds to complete darkness; 200 W/m^2 corresponds to bright illumination."
     )
@@ -117,7 +117,7 @@ with ctrl_col:
         "Feedback Resistor $R_f$ (kOhm)",
         min_value=1.0,
         max_value=100.0,
-        value=100.0,
+        value=50.0,
         step=10.0,
         help="Standard feedback resistor range: 10 kOhm to 1 MOhm."
     )
