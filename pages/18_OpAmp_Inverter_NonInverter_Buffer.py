@@ -136,19 +136,19 @@ with ctrl_col:
     is_buffer = (mode_key == "buffer")
     r1_kohm = st.slider(
         "Input / Divider Resistor $R_1$ (kOhm)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
-        step=1.0,
+        step=0.1,
         disabled=is_buffer,
         help="Not used in Voltage Follower (R1 = open)."
     )
     rf_kohm = st.slider(
         "Feedback Resistor $R_F$ (kOhm)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=200.0,
         value=47.0,
-        step=1.0,
+        step=0.1,
         disabled=is_buffer,
         help="Not used in Voltage Follower (RF = 0 Ohm direct short)."
     )
