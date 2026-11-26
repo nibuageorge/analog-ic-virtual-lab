@@ -82,16 +82,13 @@ def render_sidebar_header():
             margin-top: 6px;
             margin-bottom: 6px;
         ">
-"""
-        <div style="font-size: 0.85rem; line-height: 1.5; color: #ffffff; padding-top: 4px;">
-            <p style="font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">Developed by:</p>
-            <p style="margin: 0; color: #ffffff;"><strong>Dr. Nibu A. George,</strong></p>
-            <p style="margin: 0; color: #ffffff;">Associate Professor of Physics,</p>
-            <p style="margin: 0; color: #ffffff;">Baselius College Kottayam, (Autonomous).</p>
-            <p style="margin: 6px 0 0 0; font-style: italic; color: #ffffff;">
-                (An initiative of IQAC)
-            </p>
+            This Virtual Lab is developed by<br>
+            <strong>Dr. Nibu A George</strong>,<br>
+            Associate Professor of Physics,<br>
+            Baselius College (Autonomous),<br>
+            Kottayam
         </div>
+        <hr style="margin: 10px 0 4px 0; border: none; border-top: 1px solid #cbd5e1;">
         """,
         unsafe_allow_html=True,
     )
