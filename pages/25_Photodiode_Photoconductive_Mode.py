@@ -35,7 +35,7 @@ def draw_photoconductive_schematic(rf_kohm, vbias_v, vcc):
         d.add(elm.Dot().at((fb_x, out_y)))
         d.add(elm.Line().at((fb_x, out_y)).to((fb_x + 0.85, out_y)).label("$V_O$", loc="right", fontsize=9.5))
 
-        # Inverting (-) virtual ground node
+        # Inverting (-) virtual-ground summing node
         inv_x, inv_y = op.in1
         sx = inv_x - 0.95
         sy = inv_y
@@ -54,23 +54,29 @@ def draw_photoconductive_schematic(rf_kohm, vbias_v, vcc):
         d.add(elm.Line().at((noninv_x, noninv_y)).to((gnd_plus_x, noninv_y)))
         d.add(elm.Ground().at((gnd_plus_x, noninv_y)))
 
-        # BPW34 Photodiode in Reverse-Bias Photoconductive Mode:
-        # Cathode at +Vbias (left), Anode at virtual ground (right)
-        src_x = sx - 2.25
+        # Reverse-Bias Section (Left of virtual ground):
+        # Cathode on left (connected to +Vbias), Anode on right (connected to inverting '-' node)
+        src_x = sx - 2.35
+        gnd_bias_y = sy - 1.85
+
         d.add(
             elm.Photodiode()
+            .right()
             .at((src_x, sy))
-            .to((sx, sy))
-            .label("BPW34\n(Reverse-Bias)", loc="top", fontsize=8.2)
+            .tox(sx)
+            .label("BPW34 (Reverse-Bias)", loc="top", fontsize=8.0)
         )
-        d.add(elm.Line().at((src_x, sy)).to((src_x, sy - 0.25)))
+        d.add(elm.Dot().at((src_x, sy)))
+
+        # DC Reverse-Bias Source (+Vbias at top connected to Cathode, '-' grounded at bottom)
         d.add(
             elm.SourceV()
-            .at((src_x, sy - 0.25))
-            .to((src_x, sy - 1.55))
-            .label(f"$+V_{{bias}}$\n{vbias_v:.1f} V", loc="left", fontsize=8.2)
+            .up()
+            .at((src_x, gnd_bias_y))
+            .toy(sy)
+            .label(f"$V_{{bias}}$\n+{vbias_v:.1f} V", loc="left", fontsize=8.2)
         )
-        d.add(elm.Ground().at((src_x, sy - 1.55)))
+        d.add(elm.Ground().at((src_x, gnd_bias_y)))
 
         buf = io.BytesIO()
         d.save(buf, dpi=220, transparent=False)
