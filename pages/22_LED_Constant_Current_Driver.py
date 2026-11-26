@@ -20,49 +20,62 @@ st.markdown(
 # -------------------------------------------------------------------------
 def draw_led_driver_schematic(vin_v, rsense_ohm, vplus_v, led_color_label, n_leds):
     with schemdraw.Drawing(show=False) as d:
-        d.config(unit=2.45, fontsize=8.0)
+        d.config(unit=2.45, fontsize=8.2)
 
-        # Op-amp (LM358): Non-inverting (+) at bottom, Inverting (-) at top
-        op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
-        d.add(elm.Line().up().at(op.vd).length(0.32).label(f"+{vplus_v:.1f}V", loc="top", fontsize=7.5))
-        d.add(elm.Line().down().at(op.vs).length(0.32).label("GND", loc="bottom", fontsize=7.5))
+        # Op-Amp (LM358) with Non-Inverting (+) on TOP and Inverting (-) on BOTTOM
+        op = d.add(
+            elm.Opamp(leads=True)
+            .at((0, 0))
+            .flip()
+            .label("LM358", loc="center", fontsize=8.5)
+        )
+        d.add(elm.Line().up().at(op.vs).length(0.35).label(f"+{vplus_v:.1f}V", loc="top", fontsize=7.5))
+        d.add(elm.Line().down().at(op.vd).length(0.35).label("GND", loc="bottom", fontsize=7.5))
 
-        # Control Voltage Vin at non-inverting (+) input
+        # 1. Non-inverting (+) input (TOP): Control voltage Vin
         noninv_x, noninv_y = op.in2
-        d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.95))
-        src_x = d.here[0]
-        d.add(elm.SourceV().down().at((src_x, noninv_y)).length(1.35).label(f"$V_{{in}}$\n{vin_v:.2f} V", loc="left", fontsize=8.2))
-        d.add(elm.Ground())
+        d.add(elm.Line().left().at((noninv_x, noninv_y)).length(0.85))
+        vin_x = d.here[0]
+        d.add(elm.Dot().at((vin_x, noninv_y)).label(f"$V_{{in}} = {vin_v:.2f}$ V", loc="left", fontsize=8.5))
 
-        # Op-amp output -> Base resistor -> NPN Transistor (BC547)
-        d.add(elm.Resistor().right().at(op.out).length(1.15).label("$R_B$\n1 k$\\Omega$", loc="top", fontsize=7.8))
-        q1 = d.add(elm.BjtNpn(circle=True).anchor("base").label("BC547", loc="right", fontsize=8.0))
+        # 2. Op-amp output directly connected to NPN Transistor (BC547) Base
+        d.add(elm.Line().right().at(op.out).length(0.75))
+        q1 = d.add(elm.BjtNpn(circle=True).anchor("base").label("BC547", loc="right", fontsize=8.2))
 
-        # Collector branch: V+ -> mA meter -> LED(s) -> Collector
+        # 3. Collector branch: Collector -> LED -> mA meter -> V+ rail
         cx, cy = q1.collector
-        d.add(elm.LED().up().at((cx, cy)).length(1.15).reverse().label(f"{n_leds}x {led_color_label}\nLED", loc="right", fontsize=7.8))
+        d.add(
+            elm.LED()
+            .up()
+            .at((cx, cy))
+            .length(1.25)
+            .reverse()
+            .label(f"{n_leds}x {led_color_label}\nLED", loc="right", fontsize=8.0)
+        )
         d.add(elm.MeterA().up().length(1.05).label("mA", loc="right", fontsize=8.0))
-        d.add(elm.Line().up().length(0.3).label(f"$V_+$ = {vplus_v:.1f} V", loc="top", fontsize=8.5))
+        d.add(elm.Line().up().length(0.3).label(f"$V_+ = {vplus_v:.1f}$ V", loc="top", fontsize=8.5))
 
-        # Emitter branch: Emitter -> Sense Node -> Rsense -> Ground
+        # 4. Emitter branch: Emitter -> Sense Node -> Rsense -> Ground
         ex, ey = q1.emitter
-        d.add(elm.Line().down().at((ex, ey)).length(0.35))
+        d.add(elm.Line().down().at((ex, ey)).length(0.45))
         sense_dot = d.add(elm.Dot())
         sx, sy = sense_dot.center
 
-        d.add(elm.Resistor().down().at((sx, sy)).length(1.25).label(f"$R_{{sense}}$\n{rsense_ohm:.0f} $\\Omega$", loc="right", fontsize=8.2))
+        d.add(
+            elm.Resistor()
+            .down()
+            .at((sx, sy))
+            .length(1.35)
+            .label(f"$R_{{sense}}$\n{rsense_ohm:.0f} $\\Omega$", loc="right", fontsize=8.2)
+        )
         d.add(elm.Ground())
 
-        # Feedback line from Sense Node to Inverting (-) input
+        # 5. Clean Feedback Path from Emitter-Rsense Junction to Inverting (-) Input (Bottom)
         inv_x, inv_y = op.in1
-        top_fb_y = inv_y + 1.15
-        d.add(elm.Line().left().at((inv_x, inv_y)).length(0.55))
-        fb_left_x = d.here[0]
-        d.add(elm.Line().up().at((fb_left_x, inv_y)).toy(top_fb_y))
-        d.add(elm.Line().right().tox(sx + 0.95).label("Feedback ($V_{sense} = V_{in}$)", loc="top", fontsize=7.6))
-        fb_right_x = d.here[0]
-        d.add(elm.Line().down().toy(sy))
-        d.add(elm.Line().left().tox(sx))
+        d.add(elm.Line().left().at((sx, sy)).tox(inv_x - 0.55))
+        fb_x = d.here[0]
+        d.add(elm.Line().up().at((fb_x, sy)).toy(inv_y))
+        d.add(elm.Line().right().tox(inv_x))
 
         return d.draw(show=False).fig
 
