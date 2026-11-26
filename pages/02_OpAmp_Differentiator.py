@@ -100,9 +100,9 @@ with ctrl_col:
     c1_uf = st.slider(
         "Input Capacitor $C_1$ (µF)",
         min_value=0.005,
-        max_value=0.500,
+        max_value=1.000,
         value=0.100,
-        step=0.005,
+        step=0.001,
         format="%.3f"
     )
     rf_kohm = st.slider(
