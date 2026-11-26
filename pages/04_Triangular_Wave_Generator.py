@@ -120,7 +120,7 @@ with ctrl_col:
     st.subheader("1. Integrator Stage ($A_2$: $R_1, C_1$)")
     r1_kohm = st.slider(
         "Integrator Resistor $R_1$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=10.0,
         step=0.5,
@@ -129,16 +129,16 @@ with ctrl_col:
     c1_uf = st.slider(
         "Integrator Capacitor $C_1$ (µF)",
         min_value=0.005,
-        max_value=0.500,
-        value=0.050,
-        step=0.005,
+        max_value=1.000,
+        value=0.047,
+        step=0.001,
         format="%.3f"
     )
 
     st.subheader("2. Comparator Stage ($A_1$: $R_2, R_3$)")
     r2_kohm = st.slider(
         "Feedback Resistor $R_2$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
         step=0.5,
@@ -146,7 +146,7 @@ with ctrl_col:
     )
     r3_kohm = st.slider(
         "Comparator Resistor $R_3$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=22.0,
         step=0.5,
