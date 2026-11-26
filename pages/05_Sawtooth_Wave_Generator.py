@@ -188,7 +188,7 @@ with ctrl_col:
     st.subheader("2. Comparator Stage ($R_2, R_3$ & Zeners)")
     r2_kohm = st.slider(
         "Feedback Resistor $R_2$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
         step=0.5,
