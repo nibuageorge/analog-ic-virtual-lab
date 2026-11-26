@@ -111,25 +111,25 @@ with ctrl_col:
     r1_ohm = st.slider(
         "Ground Resistor $R_1$ (Ω)",
         min_value=50,
-        max_value=5000,
+        max_value=10000,
         value=100,
         step=50,
         help="Gayakwad Example 8-4 default: R1 = 100 Ω, R2 = 56 kΩ -> Vut = +25 mV, Vlt = -25 mV."
     )
     r2_kohm = st.slider(
         "Feedback Resistor $R_2$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=100.0,
         value=56.0,
-        step=1.0,
+        step=0.1,
         help="Controls positive feedback fraction R1 / (R1 + R2) and hysteresis width."
     )
     rl_kohm = st.slider(
         "Load Resistor $R_L$ (kΩ)",
-        min_value=1.0,
+        min_value=0.1,
         max_value=50.0,
         value=10.0,
-        step=1.0,
+        step=0.1,
         help="Textbook load resistor RL = 10 kΩ."
     )
 
