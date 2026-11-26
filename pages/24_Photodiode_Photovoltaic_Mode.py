@@ -20,8 +20,8 @@ st.markdown(
 # Helper: Draw Photovoltaic (Zero-Bias) Transimpedance Schematic
 # -------------------------------------------------------------------------
 def draw_photovoltaic_schematic(rf_kohm, vcc):
-    with schemdraw.Drawing(show=False) as d:
-        d.config(unit=2.5, fontsize=8.5)
+    with schemdraw.Drawing(show=False, bgcolor="white") as d:
+        d.config(unit=2.5, fontsize=8.5, color="#0f172a", lw=1.6)
 
         # Op-Amp (LM358): Inverting (-) at top-left, Non-Inverting (+) at bottom-left
         op = d.add(elm.Opamp(leads=True).at((0, 0)).label("LM358", loc="center", fontsize=8.5))
@@ -68,7 +68,7 @@ def draw_photovoltaic_schematic(rf_kohm, vcc):
         d.add(elm.Ground().at((pd_x, gnd_pd_y)))
 
         buf = io.BytesIO()
-        d.save(buf, dpi=220)
+        d.save(buf, dpi=220, transparent=False)
         buf.seek(0)
         plt.close("all")
         return buf
