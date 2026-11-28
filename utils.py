@@ -86,7 +86,8 @@ def render_sidebar_header():
             <strong>Dr. Nibu A George</strong>,<br>
             Associate Professor of Physics,<br>
             Baselius College (Autonomous),<br>
-            Kottayam
+            Kottayam <br>
+            (**An IQAC Initiative**)
         </div>
         <hr style="margin: 10px 0 4px 0; border: none; border-top: 1px solid #cbd5e1;">
         """,
