@@ -82,6 +82,6 @@ with col2:
 
 st.divider()
 st.caption(
-    "Developed by **Dr. Nibu A George**, Associate Professor of Physics, Baselius College (Autonomous), Kottayam | <br> (An IQAC Initiative)"
+    "Developed by **Dr. Nibu A George**, Associate Professor of Physics, Baselius College (Autonomous), Kottayam |"
     "Reference: R. A. Gayakwad, *Op-Amps and Linear Integrated Circuits*."
 )
