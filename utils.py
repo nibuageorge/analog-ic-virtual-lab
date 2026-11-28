@@ -82,7 +82,7 @@ def render_sidebar_header():
             margin-top: 6px;
             margin-bottom: 6px;
         ">
-            This Virtual Lab is developed by<br>
+            This Virtual Lab is developed by:<br>
             <strong>Dr. Nibu A George</strong>,<br>
             Associate Professor of Physics,<br>
             Baselius College (Autonomous),<br>
