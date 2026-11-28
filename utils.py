@@ -87,7 +87,7 @@ def render_sidebar_header():
             Associate Professor of Physics,<br>
             Baselius College (Autonomous),<br>
             Kottayam <br>
-            (**An IQAC Initiative**)
+            <em>(An IQAC Initiative)</em>
         </div>
         <hr style="margin: 10px 0 4px 0; border: none; border-top: 1px solid #cbd5e1;">
         """,
